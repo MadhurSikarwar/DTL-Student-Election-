@@ -1,0 +1,393 @@
+/* =========================================
+   3. dashboard.css - Premium Hub
+   ============================================ */
+
+/* Note: Variables are imported in HTML via variables.css */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: var(--font-main);
+}
+
+body {
+    background: var(--bg-body);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    color: var(--text-main);
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* --- BACKGROUND BLOBS --- */
+body::before,
+body::after {
+    content: '';
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    border-radius: 50%;
+    filter: blur(100px);
+    opacity: 0.15;
+    z-index: -1;
+    pointer-events: none;
+}
+
+body::before {
+    background: var(--blob-color-1);
+    top: -100px;
+    left: -100px;
+    animation: floatBlob 20s infinite alternate;
+}
+
+body::after {
+    background: var(--blob-color-2);
+    bottom: -100px;
+    right: -100px;
+    animation: floatBlob 25s infinite alternate-reverse;
+}
+
+@keyframes floatBlob {
+    0% {
+        transform: translate(0, 0);
+    }
+
+    100% {
+        transform: translate(100px, 50px);
+    }
+}
+
+/* --- NAVBAR --- */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 3rem;
+    background: rgba(15, 23, 42, 0.7);
+    /* Fallback */
+    background: var(--bg-surface);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-left: 1.5rem;
+    padding-left: 1.5rem;
+    border-left: 1px solid var(--border-color);
+}
+
+.nav-item {
+    text-decoration: none;
+    color: var(--text-muted);
+    font-weight: 500;
+    font-size: 0.95rem;
+    position: relative;
+    transition: color 0.3s;
+}
+
+.nav-item:hover,
+.nav-item.active {
+    color: var(--text-main);
+}
+
+.nav-item::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0%;
+    height: 2px;
+    background: var(--primary);
+    transition: width 0.3s ease;
+    border-radius: 2px;
+}
+
+.nav-item:hover::after {
+    width: 100%;
+}
+
+.user-pill {
+    background: var(--bg-surface-hover);
+    padding: 0.4rem 1rem;
+    border-radius: var(--radius-pill);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-highlight);
+    border: 1px solid var(--border-color);
+}
+
+.logout-btn {
+    text-decoration: none;
+    padding: 0.5rem 1.25rem;
+    border-radius: var(--radius-pill);
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: var(--accent-red-bg);
+    color: var(--accent-red);
+    border: 1px solid transparent;
+    transition: 0.3s;
+}
+
+.logout-btn:hover {
+    background: var(--accent-red);
+    color: white;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+
+/* --- MAIN LAYOUT --- */
+.main-wrapper {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    padding-top: 120px;
+    padding-bottom: 60px;
+}
+
+.container {
+    width: 90%;
+    max-width: 1100px;
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+}
+
+/* --- WELCOME CARD --- */
+.welcome-card {
+    width: 100%;
+    min-height: 250px;
+    border-radius: var(--radius-lg);
+    padding: 3rem;
+    display: flex;
+    align-items: center;
+    position: relative;
+    background-size: cover;
+    background-position: center;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    animation: slideInDown 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Gradient Overlay for Welcome Card */
+.welcome-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.6) 100%);
+    z-index: 1;
+}
+
+[data-theme="light"] .welcome-card::after {
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.5) 100%);
+}
+
+.welcome-content {
+    position: relative;
+    z-index: 2;
+    max-width: 600px;
+}
+
+.welcome-card h2 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    color: var(--text-main);
+    line-height: 1.2;
+}
+
+.welcome-card .highlight {
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.welcome-card p {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+}
+
+/* --- OPTIONS GRID --- */
+.options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    animation: fadeInUp 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* CARD STYLING */
+.option-card {
+    text-decoration: none;
+    background: var(--bg-surface);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 2.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    /* Left aligned looks more modern */
+    text-align: left;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Mouse Glow Effect integration */
+.option-card::before {
+    content: "";
+    position: absolute;
+    top: var(--mouse-y, 0px);
+    left: var(--mouse-x, 0px);
+    width: 250px;
+    height: 250px;
+    background: var(--primary);
+    filter: blur(100px);
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.option-card:hover::before {
+    opacity: 0.15;
+}
+
+.option-card:hover {
+    transform: translateY(-8px);
+    border-color: var(--primary);
+    box-shadow: var(--shadow-lg);
+}
+
+/* ICON WRAPPER */
+.icon-wrapper {
+    width: 60px;
+    height: 60px;
+    background: var(--bg-surface-hover);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    transition: 0.4s ease;
+    border: 1px solid var(--border-color);
+    z-index: 1;
+}
+
+.option-card:hover .icon-wrapper {
+    background: var(--primary);
+    transform: scale(1.1) rotate(-5deg);
+    box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+}
+
+.option-card img {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+    transition: 0.3s;
+}
+
+/* Hover effect: Scale up slightly */
+.option-card:hover img {
+    transform: scale(1.1);
+}
+
+/* TEXT */
+.option-card h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--text-main);
+    z-index: 1;
+}
+
+.option-card p {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    z-index: 1;
+}
+
+/* Logout Card Specifics */
+.logout-card:hover {
+    border-color: var(--accent-red);
+}
+
+.logout-card:hover .icon-wrapper {
+    background: var(--accent-red);
+    box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3);
+}
+
+/* ANIMATIONS */
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-40px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(60px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .navbar {
+        padding: 1rem;
+    }
+
+    .options-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .welcome-card {
+        padding: 2rem;
+        text-align: center;
+        justify-content: center;
+    }
+
+    .welcome-card h2 {
+        font-size: 2rem;
+    }
+}

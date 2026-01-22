@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: student-election-app
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: FLASK_SECRET_KEY
+        sync: false
+      - key: ADMIN_PRIVATE_KEY
+        sync: false
+      - key: CONTRACT_ADDRESS
+        sync: false
+      - key: RPC_URL
+        value: https://ethereum-sepolia.publicnode.com
+      - key: ALLOWED_ADMIN_EMAIL
+        sync: false
+      - key: FIREBASE_CREDENTIALS_PATH
+        value: firebase_credentials.json
+      - key: PYTHONUNBUFFERED
+        value: 1

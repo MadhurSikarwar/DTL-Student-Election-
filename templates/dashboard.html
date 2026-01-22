@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Secure Blockchain-based Student Election Platform. Vote for your representatives with transparency and integrity.">
+    <title>Student Dashboard — RVCE E-Vote</title>
+    <!-- Favicon -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗳️</text></svg>">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <nav class="navbar" role="navigation" aria-label="Main Navigation">
+        <a href="{{ url_for('home') }}" class="logo" style="text-decoration: none;" aria-label="E-Vote Home">
+            RVCE E-Vote<span
+                style="font-size: 0.7rem; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; margin-left: 8px;">Cycle
+                #{{ current_election_id }}</span>
+        </a>
+        <div class="nav-links">
+            <a href="{{ url_for('dashboard') }}" class="nav-item active">Home</a>
+            <a href="{{ url_for('vote') }}" class="nav-item">Vote</a>
+            <a href="{{ url_for('results') }}" class="nav-item">Results</a>
+            <a href="{{ url_for('architecture') }}" class="nav-item">System Info</a>
+
+            <div class="nav-actions">
+                <span class="user-pill" aria-label="Logged in as student">{{ student_id }}</span>
+                <button id="themeToggleBtn" class="nav-btn theme-btn" onclick="toggleTheme()"
+                    aria-label="Toggle Dark/Light Mode">
+                    <span class="theme-icon">🌙</span>
+                </button>
+                <a href="{{ url_for('logout') }}" class="nav-btn logout-btn" aria-label="Logout">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-wrapper">
+        <div class="container">
+
+            <!-- Welcome Section -->
+            <div class="welcome-card portal-in" id="welcomeCard">
+                <div class="welcome-content">
+                    <h1>Hello, <span class="highlight">{{ student_id }}</span> 👋</h1>
+                    <p>Welcome to the <span class="text-gradient">2025 Student Council Elections</span>. <br>Your voice
+                        matters. Cast your vote securely on the Ethereum Blockchain.</p>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="options-grid">
+                <a href="{{ url_for('vote') }}" class="option-card">
+                    <div class="icon-wrapper">
+                        <img src="{{ url_for('static', filename='images/vote.png') }}" alt="Vote Icon">
+                    </div>
+                    <h3>Cast Your Vote</h3>
+                    <p>Select your candidate and submit your vote securely.</p>
+                    <span class="arrow-link">Vote Now &rarr;</span>
+                </a>
+
+                <a href="{{ url_for('results') }}" class="option-card">
+                    <div class="icon-wrapper">
+                        <img src="{{ url_for('static', filename='images/results.png') }}" alt="Results Icon">
+                    </div>
+                    <h3>Live Vote Count</h3>
+                    <p>Watch real-time updates as votes are confirmed on-chain.</p>
+                    <span class="arrow-link">View Standings &rarr;</span>
+                </a>
+
+                <div class="option-card">
+                    <div class="icon-box">🔒</div>
+                    <h3>Secure & Transparent</h3>
+                    <p>Powered by Sepolia Testnet. Every vote is immutable and auditable.</p>
+                    <span class="status-badge">System Online</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <footer style="text-align: center; padding: 2rem;">
+        <a href="/admin" class="admin-portal-btn">Admin Portal</a>
+        <style>
+            .admin-portal-btn {
+                background: #ff0033;
+                color: white;
+                padding: 0.8rem 2rem;
+                border-radius: 50px;
+                text-decoration: none;
+                font-weight: 600;
+                font-size: 0.9rem;
+                display: inline-block;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 12px rgba(255, 0, 51, 0.4);
+                margin-top: 10px;
+            }
+
+            .admin-portal-btn:hover {
+                background: #cc0029;
+                transform: translateY(-2px);
+                box-shadow: 0 6px 16px rgba(255, 0, 51, 0.6);
+            }
+        </style>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Use a high-quality election themed background
+        const bgImage = "https://images.unsplash.com/photo-1540910419868-474947cebacb?q=80&w=2072&auto=format&fit=crop";
+        document.getElementById("welcomeCard").style.backgroundImage = `url('${bgImage}')`;
+    </script>
+    <script src="{{ url_for('static', filename='jss/theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='jss/cursor.js') }}"></script>
+    <script src="{{ url_for('static', filename='jss/background-particles.js') }}"></script>
+</body>
+
+</html>

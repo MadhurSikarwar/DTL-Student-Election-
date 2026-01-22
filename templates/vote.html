@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Cast your secure vote for the Class Representative. Blockchain-powered student election.">
+    <title>Vote Now — RVCE E-Vote</title>
+    <!-- Favicon -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗳️</text></svg>">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/vote.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        .etherscan-link {
+            display: inline-block;
+            margin-top: 5px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            border-bottom: 1px dashed var(--primary);
+        }
+
+        .etherscan-link:hover {
+            color: var(--primary-hover);
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar" role="navigation" aria-label="Main Navigation">
+        <a href="{{ url_for('home') }}" class="logo" style="text-decoration: none;" aria-label="E-Vote Home">RVCE
+            E-Vote</a>
+        <div class="nav-links">
+            <a href="{{ url_for('dashboard') }}" class="nav-item">Home</a>
+            <a href="{{ url_for('vote') }}" class="nav-item active" aria-current="page">Vote</a>
+            <a href="{{ url_for('results') }}" class="nav-item">Results</a>
+            <a href="{{ url_for('architecture') }}" class="nav-item">System Info</a>
+
+            <div class="nav-actions">
+                <span class="user-pill" aria-label="Logged in as student">{{ session['student_id'] }}</span>
+                <button id="themeToggleBtn" class="nav-btn theme-btn" onclick="toggleTheme()"
+                    aria-label="Toggle Dark/Light Mode">
+                    <span class="theme-icon">🌙</span>
+                </button>
+                <a href="{{ url_for('logout') }}" class="nav-btn logout-btn" aria-label="Logout">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-wrapper">
+        <div class="container">
+
+            <header class="page-header portal-in">
+                <div class="header-content">
+                    <h1>Choose Your Representative</h1>
+                    <p>Select one candidate below. Your vote is final and immutable.</p>
+                </div>
+                <!-- Wallet Status & System Ready -->
+                <div class="wallet-control">
+                    <button id="connectWalletBtn" class="connect-btn" disabled>Initializing...</button>
+                    <div class="wallet-status" id="walletDisplay" aria-live="polite">
+                        <span class="dot red"></span> Not Connected
+                    </div>
+                </div>
+            </header>
+
+            <!-- Candidates Grid -->
+            <div class="candidates-grid">
+                {% for candidate in candidates %}
+                <div class="candidate-card" id="{{ candidate.id }}" onclick="selectCandidate(this.id)">
+                    <div class="card-inner">
+                        <input type="radio" name="candidate" value="{{ candidate.id }}" class="hidden-radio"
+                            style="display:none;">
+                        <div class="img-wrapper">
+                            <img src="{{ url_for('static', filename='images/' + candidate.image) }}"
+                                alt="Photo of {{ candidate.name }}">
+                        </div>
+                        <div class="info">
+                            <h3>{{ candidate.name }}</h3>
+                            <p class="position">{{ candidate.position }}</p>
+                        </div>
+                        <div class="selection-indicator">
+                            <span class="circle"></span> Select
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Action Bar -->
+            <div class="action-bar portal-in" style="justify-content: center;">
+                <button id="submitVoteBtn" class="vote-btn">Confirm & Submit Vote &rarr;</button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- POPUP MODAL -->
+    <div id="popupOverlay" class="popup-overlay hidden" role="dialog" aria-modal="true">
+        <div class="popup-content">
+            <h2 id="popupTitle">Success</h2>
+            <p id="popupMsg">Your vote has been recorded.</p>
+            <div id="popupLinkContainer" style="margin-top: 10px; margin-bottom: 20px;"></div>
+            <button id="popupClose" class="close-btn">Close</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='jss/theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='jss/cursor.js') }}"></script>
+    <script src="{{ url_for('static', filename='jss/vote.js') }}"></script>
+    <script src="{{ url_for('static', filename='jss/background-particles.js') }}"></script>
+</body>
+
+</html>

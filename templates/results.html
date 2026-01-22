@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Results — E-Vote 2025</title>
+
+    <title>Live Results — RVCE E-Vote</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/results.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- ================= NAVBAR ================= -->
+    <nav class="navbar" role="navigation" aria-label="Main Navigation">
+        <a href="{{ url_for('home') }}" class="logo" style="text-decoration: none;" aria-label="E-Vote Home">RVCE
+            E-Vote</a>
+        <div class="nav-links">
+            <a href="{{ url_for('dashboard') }}" class="nav-item">Home</a>
+            <a href="{{ url_for('vote') }}" class="nav-item">Vote</a>
+            <a href="{{ url_for('results') }}" class="nav-item active">Results</a>
+            <a href="{{ url_for('architecture') }}" class="nav-item">System Info</a>
+
+            <div class="nav-actions">
+                <span class="user-pill" aria-label="Logged in as student">{{ session['student_id'] }}</span>
+                <button id="themeToggleBtn" class="nav-btn theme-btn" onclick="toggleTheme()"
+                    aria-label="Toggle Dark/Light Mode">
+                    <span class="theme-icon">🌙</span>
+                </button>
+                <a href="{{ url_for('logout') }}" class="nav-btn logout-btn" aria-label="Logout">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ================= MAIN ================= -->
+    <div class="main-wrapper">
+        <div class="container">
+
+            <!-- CSV Download (Moved from Navbar) -->
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
+                <button onclick="downloadCSV()" class="nav-btn"
+                    style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; padding: 0.5rem 1rem; cursor: pointer;">
+                    📥 Download Report
+                </button>
+            </div>
+
+            <!-- ===== WINNER BOX ===== -->
+            <div id="winnerBox" class="winner-box">
+                <div class="winner-content">
+                    <div class="crown-icon">👑</div>
+                    <h2 id="winnerText">Winner: Calculating...</h2>
+                    <p class="note">
+                        <span class="live-dot"></span> Live updates from Blockchain
+                    </p>
+                </div>
+                <div class="overlay"></div>
+            </div>
+
+            <!-- ================= RESULTS GRID ================= -->
+            <div class="results-grid">
+
+                <!-- Candidate 1 -->
+                <div class="result-card" id="card1">
+                    <div class="rank-badge">#1</div>
+                    <div class="img-wrapper">
+                        <img src="{{ url_for('static', filename='images/cand1.jpg') }}" class="cand-img">
+                    </div>
+                    <div class="info">
+                        <h3>Candidate One</h3>
+                        <p class="position">Class Rep</p>
+                    </div>
+                    <div class="vote-count">
+                        <span id="v1" class="count">0</span>
+                        <span class="label">Votes</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="fill"></div>
+                    </div>
+                </div>
+
+                <!-- Candidate 2 -->
+                <div class="result-card" id="card2">
+                    <div class="rank-badge">#2</div>
+                    <div class="img-wrapper">
+                        <img src="{{ url_for('static', filename='images/cand2.jpg') }}" class="cand-img">
+                    </div>
+                    <div class="info">
+                        <h3>Candidate Two</h3>
+                        <p class="position">Class Rep</p>
+                    </div>
+                    <div class="vote-count">
+                        <span id="v2" class="count">0</span>
+                        <span class="label">Votes</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="fill"></div>
+                    </div>
+                </div>
+
+                <!-- Candidate 3 -->
+                <div class="result-card" id="card3">
+                    <div class="rank-badge">#3</div>
+                    <div class="img-wrapper">
+                        <img src="{{ url_for('static', filename='images/cand3.jpg') }}" class="cand-img">
+                    </div>
+                    <div class="info">
+                        <h3>Candidate Three</h3>
+                        <p class="position">Class Rep</p>
+                    </div>
+                    <div class="vote-count">
+                        <span id="v3" class="count">0</span>
+                        <span class="label">Votes</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="fill"></div>
+                    </div>
+                </div>
+
+                <!-- Candidate 4 -->
+                <div class="result-card" id="card4">
+                    <div class="rank-badge">#4</div>
+                    <div class="img-wrapper">
+                        <img src="{{ url_for('static', filename='images/cand4.jpg') }}" class="cand-img">
+                    </div>
+                    <div class="info">
+                        <h3>Candidate Four</h3>
+                        <p class="position">Class Rep</p>
+                    </div>
+                    <div class="vote-count">
+                        <span id="v4" class="count">0</span>
+                        <span class="label">Votes</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="fill"></div>
+                    </div>
+                </div>
+
+                <!-- Candidate 5 -->
+                <div class="result-card" id="card5">
+                    <div class="rank-badge">#5</div>
+                    <div class="img-wrapper">
+                        <img src="{{ url_for('static', filename='images/cand5.jpg') }}" class="cand-img">
+                    </div>
+                    <div class="info">
+                        <h3>Candidate Five</h3>
+                        <p class="position">Class Rep</p>
+                    </div>
+                    <div class="vote-count">
+                        <span id="v5" class="count">0</span>
+                        <span class="label">Votes</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="fill"></div>
+                    </div>
+                </div>
+
+                <!-- Candidate 6 -->
+                <div class="result-card" id="card6">
+                    <div class="rank-badge">#6</div>
+                    <div class="img-wrapper">
+                        <img src="{{ url_for('static', filename='images/cand6.jpg') }}" class="cand-img">
+                    </div>
+                    <div class="info">
+                        <h3>Candidate Six</h3>
+                        <p class="position">Class Rep</p>
+                    </div>
+                    <div class="vote-count">
+                        <span id="v6" class="count">0</span>
+                        <span class="label">Votes</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="fill"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= SCRIPTS ================= -->
+    <script src="{{ url_for('static', filename='vendor/ethers.umd.min.js') }}"></script>
+
+
+    <script src="{{ url_for('static', filename='jss/blockchainConfig.js') }}"></script>
+    <script src="{{ url_for('static', filename='jss/results.js') }}"></script>
+    <script src="{{ url_for('static', filename='jss/theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='jss/cursor.js') }}"></script>
+    <script src="{{ url_for('static', filename='jss/background-particles.js') }}"></script>
+
+    <!-- ================= WINNER BACKGROUND SCRIPT ================= -->
+    <script>
+        // Use local premium background
+        const imageUrl = "{{ url_for('static', filename='images/winner-bg-premium.png') }}";
+
+        const box = document.getElementById("winnerBox");
+        if (box) {
+            box.style.backgroundImage = `url('${imageUrl}')`;
+        }
+    </script>
+
+</body>
+
+</html>

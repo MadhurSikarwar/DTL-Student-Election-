@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — RVCE E-Vote</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <a href="{{ url_for('home') }}" class="logo" style="text-decoration: none;">RVCE E-Vote</a>
+        <div class="nav-links">
+            <a href="{{ url_for('dashboard') }}" class="nav-item">Home</a>
+            <a href="{{ url_for('vote') }}" class="nav-item">Vote</a>
+            <a href="{{ url_for('results') }}" class="nav-item">Results</a>
+
+            <div class="nav-actions">
+                <button id="themeToggleBtn" class="nav-btn theme-btn" onclick="toggleTheme()" aria-label="Toggle Theme">
+                    <span class="theme-icon">🌙</span>
+                </button>
+                <a href="{{ url_for('login') }}" class="nav-btn active">Login</a>
+                <a href="{{ url_for('register') }}" class="nav-btn">Register</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-wrapper">
+        <div class="container">
+            <div class="left-panel">
+                <img id="randomImage"
+                    src="https://d1ldvf68ux039x.cloudfront.net/thumbs/photos/2009/6373697/2000w_q95.jpg"
+                    class="side-image">
+                <div class="overlay"></div>
+            </div>
+
+            <div class="right-panel">
+                <div class="form-header">
+                    <h2>Welcome Back</h2>
+                    <p class="subtitle">Secure RVCE Login</p>
+                </div>
+
+                <form id="loginForm">
+                    <div class="input-group">
+                        <label for="email">RVCE Email</label>
+                        <input id="email" type="email" placeholder="name@rvce.edu.in" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="password">Password</label>
+                        <input id="password" type="password" placeholder="••••••••" required>
+                    </div>
+
+                    <div id="err" class="error-msg" style="display:none;"></div>
+
+                    <button type="submit" id="loginBtn" class="primary-btn">Login</button>
+                </form>
+
+                Don’t have an account? <a href="{{ url_for('register') }}" class="register-link">Register here</a>
+                </p>
+                <div style="margin-top: 2rem; text-align: center;">
+                    <a href="/admin"
+                        style="background: #ff0033; color: white; padding: 0.8rem 1.5rem; border-radius: 4px; text-decoration: none; font-weight: 600; display: inline-block; transition: background 0.2s; box-shadow: 0 4px 12px rgba(255, 0, 51, 0.3);">Admin
+                        Access</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===========================================================
+        // 1. PASTE YOUR FIREBASE WEB CONFIG HERE
+        // ===========================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyAq4oLBEpx4uYwMlhAG0hFG_RdFmZEaEA0",
+            authDomain: "rvce-voting-system.firebaseapp.com",
+            projectId: "rvce-voting-system",
+            storageBucket: "rvce-voting-system.firebasestorage.app",
+            messagingSenderId: "461777093514",
+            appId: "1:461777093514:web:4838fda3bc935db2e67e73",
+            measurementId: "G-YQTTLVDD76"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        // ===========================================================
+        // 2. LOGIN LOGIC
+        // ===========================================================
+        const form = document.getElementById("loginForm");
+        const errEl = document.getElementById("err");
+        const loginBtn = document.getElementById("loginBtn");
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            errEl.style.display = 'none';
+            loginBtn.textContent = "Verifying...";
+            loginBtn.disabled = true;
+
+            const email = document.getElementById("email").value.trim();
+            const pw = document.getElementById("password").value;
+
+            try {
+                // 1. Sign In with Firebase
+                const userCredential = await auth.signInWithEmailAndPassword(email, pw);
+                const user = userCredential.user;
+
+                // 2. Check 2FA (Email Verification)
+                if (!user.emailVerified) {
+                    throw new Error("Please verify your email address first.");
+                }
+
+                // 3. Domain Check (Extra Layer)
+                if (!user.email.endsWith("@rvce.edu.in")) {
+                    throw new Error("Unauthorized domain.");
+                }
+
+                // 4. Get ID Token to send to Backend
+                const idToken = await user.getIdToken();
+
+                // 5. Send Token to Python Backend
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ idToken: idToken })
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    window.location.href = data.redirect;
+                } else {
+                    throw new Error(data.message);
+                }
+
+            } catch (error) {
+                console.error(error);
+                let msg = error.message;
+                if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+                    msg = "Invalid email or password.";
+                }
+
+                errEl.style.display = 'block';
+                errEl.textContent = msg;
+                loginBtn.textContent = "Login";
+                loginBtn.disabled = false;
+
+                // If email isn't verified, log them out immediately from Firebase
+                if (msg.includes("verify")) {
+                    auth.signOut();
+                }
+            }
+        });
+    </script>
+    <script src="{{ url_for('static', filename='jss/theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='jss/cursor.js') }}"></script>
+    <script src="{{ url_for('static', filename='jss/background-particles.js') }}"></script>
+</body>
+
+</html>

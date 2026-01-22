@@ -1,0 +1,203 @@
+/* =========================================
+   1. variables.css - Core Design System
+   ============================================ */
+
+:root {
+    /* --- TYPOGRAPHY --- */
+    --font-main: "Poppins", sans-serif;
+    --font-heading: "Inter", sans-serif;
+
+    /* --- SPACING & LAYOUT --- */
+    --radius-sm: 8px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --radius-pill: 50px;
+
+    /* --- ELEVATION & SHADOWS (Default/Dark) --- */
+    --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+    --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.4);
+}
+
+/* --- PREMIUM ANIMATED MESH GRADIENT --- */
+@keyframes premiumGradient {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* --- DARK THEME (Default) --- */
+:root,
+[data-theme="dark"] {
+    /* Deep luxurious gradient: Navy -> Purple -> Slate */
+    --bg-body: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #1e293b);
+    --bg-surface: rgba(15, 23, 42, 0.6);
+    --bg-surface-hover: rgba(30, 41, 59, 0.8);
+    --bg-glass: rgba(15, 23, 42, 0.4);
+
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --text-highlight: #e2e8f0;
+
+    --border-color: rgba(255, 255, 255, 0.08);
+    --border-hover: rgba(99, 102, 241, 0.5);
+
+    --primary: #6366f1;
+    --primary-hover: #4f46e5;
+    --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+
+    --accent-red: #ef4444;
+    --accent-red-bg: rgba(220, 38, 38, 0.15);
+
+    --blob-color-1: #4f46e5;
+    --blob-color-2: #ec4899;
+}
+
+[data-theme="light"] {
+    /* Crisp modern gradient: Slate -> Blue -> White */
+    --bg-body: linear-gradient(-45deg, #f8fafc, #e0f2fe, #dbeafe, #f1f5f9);
+
+    --bg-surface: rgba(255, 255, 255, 0.6);
+    --bg-surface-hover: rgba(255, 255, 255, 0.85);
+    --bg-glass: rgba(255, 255, 255, 0.5);
+
+    --text-main: #0f172a;
+    --text-muted: #475569;
+    --text-highlight: #1e293b;
+
+    --border-color: rgba(0, 0, 0, 0.08);
+    --border-hover: rgba(79, 70, 229, 0.4);
+
+    --primary: #4f46e5;
+    --primary-hover: #4338ca;
+    --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%);
+
+    --accent-red: #dc2626;
+    --accent-red-bg: rgba(220, 38, 38, 0.1);
+
+    --blob-color-1: #a5b4fc;
+    --blob-color-2: #fbcfe8;
+
+    --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    --shadow-glow: 0 0 15px rgba(99, 102, 241, 0.25);
+}
+
+/* --- GLOBAL BACKGROUND ANIMATION --- */
+body {
+    background-size: 400% 400% !important;
+    animation: premiumGradient 15s ease infinite !important;
+    background-attachment: fixed !important;
+}
+
+/* Common Global Resets for smoother animations */
+*,
+*::before,
+*::after {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* --- GLOBAL SCROLLBAR --- */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-hover);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+}
+
+/* --- THEME TOGGLE BUTTON --- */
+.theme-btn {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+}
+
+.theme-btn:hover {
+    background: var(--bg-surface-hover);
+    color: var(--primary);
+    transform: rotate(30deg);
+    box-shadow: var(--shadow-glow);
+    border-color: var(--primary);
+}
+
+/* --- GLOBAL UTILITIES --- */
+.text-gradient {
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* --- SCROLL REVEAL ANIMATION --- */
+.reveal-on-scroll {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+}
+
+.reveal-on-scroll.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* --- PREMIUM HOVER GLOWS --- */
+/* This replaces the custom cursor with a smoother, native-feel interaction */
+
+.nav-btn:hover,
+.logout-btn:hover,
+.option-card:hover {
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+    transform: translateY(-2px);
+}
+
+.vote-btn:hover {
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
+}
+
+/* Subtle pulse for key actions */
+@keyframes pulseGlow {
+    0% {
+        box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(99, 102, 241, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+    }
+}
+
+.primary-btn:hover {
+    animation: pulseGlow 1.5s infinite;
+}

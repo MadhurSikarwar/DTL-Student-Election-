@@ -1,0 +1,113 @@
+# ==========================================
+# SECRETS & CREDENTIALS (NEVER COMMIT!)
+# ==========================================
+.env
+.env.*
+!.env.example
+firebase_credentials.json
+localchain.json
+
+# ==========================================
+# DATABASES & DATA FILES
+# ==========================================
+*.db
+*.sqlite
+*.sqlite3
+election.db
+database.db
+voted_users.json
+voted_users_*.json
+election_config.json
+election_offsets.json
+
+# ==========================================
+# PYTHON CACHE & BUILD
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ==========================================
+# VIRTUAL ENVIRONMENTS
+# ==========================================
+venv/
+env/
+ENV/
+.venv/
+.ENV/
+env.bak/
+venv.bak/
+
+# ==========================================
+# IDE & EDITOR FILES
+# ==========================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+
+# ==========================================
+# OS FILES
+# ==========================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# ==========================================
+# LOGS & TESTING
+# ==========================================
+*.log
+*.out
+.coverage
+.pytest_cache/
+htmlcov/
+.tox/
+.hypothesis/
+
+# ==========================================
+# DEPLOYMENT & CI/CD
+# ==========================================
+.vercel
+.netlify
+.serverless/
+*.pid
+*.seed
+*.pid.lock
+
+# ==========================================
+# TEMPORARY FILES
+# ==========================================
+*.tmp
+*.temp
+*.bak
+*.swp
+.cache/

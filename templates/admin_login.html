@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login — RVCE E-Vote</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+    <style>
+        .admin-badge {
+            background: var(--accent-red);
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            vertical-align: middle;
+            margin-left: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR (Copied from login.html for symmetry) -->
+    <nav class="navbar">
+        <a href="{{ url_for('home') }}" class="logo" style="text-decoration: none;">RVCE E-Vote</a>
+        <div class="nav-links">
+            <a href="{{ url_for('dashboard') }}" class="nav-item">Home</a>
+            <a href="{{ url_for('vote') }}" class="nav-item">Vote</a>
+            <a href="{{ url_for('results') }}" class="nav-item">Results</a>
+
+            <div class="nav-actions">
+                <button id="themeToggleBtn" class="nav-btn theme-btn" onclick="toggleTheme()" aria-label="Toggle Theme">
+                    <span class="theme-icon">🌙</span>
+                </button>
+                <a href="{{ url_for('login') }}" class="nav-btn">Student Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-wrapper">
+        <div class="container">
+            <!-- Left Panel: Image (Symmetric to Student Login) -->
+            <div class="left-panel">
+                <img src="https://img.freepik.com/free-vector/cyber-security-concept_23-2148532223.jpg"
+                    class="side-image" alt="Admin Security">
+                <div class="overlay"></div>
+                <!-- Optional: Overlay Text for Admin Context -->
+                <div style="position: absolute; bottom: 40px; left: 40px; right: 40px; color: white; z-index: 2;">
+                    <h2 style="font-size: 2rem; margin-bottom: 0.5rem;">System Control</h2>
+                    <p style="opacity: 0.8;">Restricted access area for election commissioners.</p>
+                </div>
+            </div>
+
+            <!-- Right Panel: Form -->
+            <div class="right-panel">
+                <div class="form-header">
+                    <h2>Admin Panel <span class="admin-badge">Restricted</span></h2>
+                    <p class="subtitle">Secure Access for Election Officials.</p>
+                </div>
+
+                <div id="err" class="error-msg" style="display:none; margin-bottom: 1rem;"></div>
+
+                <form id="adminLoginForm">
+                    <div class="input-group">
+                        <label>Admin Email</label>
+                        <input type="email" id="email" placeholder="official@rvce.edu.in" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Password</label>
+                        <input type="password" id="password" placeholder="Secure Password" required>
+                    </div>
+
+                    <button type="submit" id="loginBtn" class="primary-btn"
+                        style="background: var(--accent-red); border-color: var(--accent-red);">
+                        Authenticate
+                    </button>
+                </form>
+
+                <div style="margin-top: 2rem; text-align: center;">
+                    <a href="{{ url_for('home') }}"
+                        style="background: #10b981; color: white; padding: 0.8rem 1.5rem; border-radius: 4px; text-decoration: none; font-weight: 600; display: inline-block; transition: background 0.2s;">
+                        &larr; Back to Student Portal
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script>
+        // ===========================================================
+        // 1. FIREBASE CONFIG (Shared)
+        // ===========================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyAq4oLBEpx4uYwMlhAG0hFG_RdFmZEaEA0",
+            authDomain: "rvce-voting-system.firebaseapp.com",
+            projectId: "rvce-voting-system",
+            storageBucket: "rvce-voting-system.firebasestorage.app",
+            messagingSenderId: "461777093514",
+            appId: "1:461777093514:web:4838fda3bc935db2e67e73",
+            measurementId: "G-YQTTLVDD76"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        // ===========================================================
+        // 2. ADMIN LOGIN LOGIC
+        // ===========================================================
+        const form = document.getElementById("adminLoginForm");
+        const errEl = document.getElementById("err");
+        const loginBtn = document.getElementById("loginBtn");
+
+        // STRICT ADMIN EMAIL
+        const ALLOWED_ADMIN = "madhurrishis.is24@rvce.edu.in";
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            errEl.style.display = 'none';
+            loginBtn.textContent = "Verifying Credentials...";
+            loginBtn.disabled = true;
+
+            const email = document.getElementById("email").value.trim();
+            const pw = document.getElementById("password").value;
+
+            try {
+                // 1. Check Email BEFORE Firebase Call
+                if (email !== ALLOWED_ADMIN) {
+                    throw new Error("Access Denied: This account is not authorized for administration.");
+                }
+
+                // 2. Sign In with Firebase
+                const userCredential = await auth.signInWithEmailAndPassword(email, pw);
+                const user = userCredential.user;
+
+                // 3. Get ID Token
+                const idToken = await user.getIdToken();
+
+                // 4. Send Token to Backend Admin Route
+                const response = await fetch('/admin', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ idToken: idToken })
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    window.location.href = data.redirect;
+                } else {
+                    throw new Error(data.message);
+                }
+
+            } catch (error) {
+                console.error(error);
+                let msg = error.message;
+                if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+                    msg = "Invalid credentials.";
+                }
+
+                errEl.style.display = 'block';
+                errEl.textContent = msg;
+                loginBtn.textContent = "Authenticate";
+                loginBtn.disabled = false;
+
+                if (auth.currentUser) auth.signOut();
+            }
+        });
+    </script>
+    <script src="{{ url_for('static', filename='jss/theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='jss/cursor.js') }}"></script>
+    <script src="{{ url_for('static', filename='jss/background-particles.js') }}"></script>
+</body>
+
+</html>
