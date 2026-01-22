@@ -1,38 +1,24 @@
 @echo off
 echo ======================================
-echo Git Push to GitHub
+echo Pushing Updates to GitHub
 echo ======================================
 
 echo.
-echo Step 1: Checking Git status...
-git status
+echo Adding changed files...
+git add templates/login.html
+git add requirements.txt
 
 echo.
-echo Step 2: Initializing Git repository (if needed)...
-git init
+echo Creating commit...
+git commit -m "Add premium forgot password UI with gradients and enhanced modal"
 
 echo.
-echo Step 3: Adding all files...
-git add .
-
-echo.
-echo Step 4: Creating commit...
-git commit -m "Prepare for Render deployment - Add configuration files"
-
-echo.
-echo Step 5: Adding remote repository...
-git remote add origin https://github.com/MadhurSikarwar/DTL-Student-Election-.git
-
-echo.
-echo Step 6: Setting branch to main...
-git branch -M main
-
-echo.
-echo Step 7: Pushing to GitHub...
-git push -u origin main
+echo Pushing to GitHub...
+git push origin main
 
 echo.
 echo ======================================
-echo Done! Check output above for any errors.
+echo Done! Your changes are now on GitHub.
+echo Render will auto-deploy shortly.
 echo ======================================
 pause
