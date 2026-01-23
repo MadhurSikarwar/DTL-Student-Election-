@@ -235,6 +235,16 @@ def results():
     resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
     return resp
 
+# ---------------- MANIFESTO ----------------
+@app.route("/manifesto/<int:candidate_id>")
+def manifesto(candidate_id):
+    if "user_id" not in session: return redirect("/login")
+    # Validate candidate ID
+    if candidate_id < 1 or candidate_id > 6:
+        return redirect("/vote")
+    return render_template(f"manifesto_candidate{candidate_id}.html")
+
+
 # ---------------- LOGOUT ----------------
 @app.route("/logout")
 def logout():

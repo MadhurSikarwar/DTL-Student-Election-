@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Manifesto for Candidate One - Class Representative Election">
+    <title>Candidate One - Manifesto — RVCE E-Vote</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗳️</text></svg>">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        .manifesto-container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 2rem;
+            animation: fadeIn 0.6s ease-in-out;
+        }
+
+        .manifesto-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+            border-radius: 16px;
+            color: white;
+        }
+
+        .candidate-profile {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .candidate-photo {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid white;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .candidate-intro h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .candidate-intro p {
+            font-size: 1.2rem;
+            opacity: 0.95;
+        }
+
+        .manifesto-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .manifesto-section:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .manifesto-section h2 {
+            color: var(--primary);
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .manifesto-section h3 {
+            color: var(--text-primary);
+            font-size: 1.3rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .manifesto-section ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .manifesto-section li {
+            padding: 0.75rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .manifesto-section li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .back-btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 2rem;
+        }
+
+        .back-btn:hover {
+            background: var(--primary-hover);
+            transform: translateX(-4px);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .quote-box {
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary);
+            padding: 1.5rem;
+            margin: 2rem 0;
+            font-style: italic;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar" role="navigation" aria-label="Main Navigation">
+        <a href="{{ url_for('home') }}" class="logo" style="text-decoration: none;" aria-label="E-Vote Home">RVCE
+            E-Vote</a>
+        <div class="nav-links">
+            <a href="{{ url_for('dashboard') }}" class="nav-item">Home</a>
+            <a href="{{ url_for('vote') }}" class="nav-item">Vote</a>
+            <a href="{{ url_for('results') }}" class="nav-item">Results</a>
+            <a href="{{ url_for('architecture') }}" class="nav-item">System Info</a>
+
+            <div class="nav-actions">
+                <span class="user-pill" aria-label="Logged in as student">{{ session['student_id'] }}</span>
+                <button id="themeToggleBtn" class="nav-btn theme-btn" onclick="toggleTheme()"
+                    aria-label="Toggle Dark/Light Mode">
+                    <span class="theme-icon">🌙</span>
+                </button>
+                <a href="{{ url_for('logout') }}" class="nav-btn logout-btn" aria-label="Logout">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-wrapper">
+        <div class="manifesto-container">
+            <div class="manifesto-header">
+                <div class="candidate-profile">
+                    <img src="{{ url_for('static', filename='images/cand1.jpg') }}" alt="Candidate One" class="candidate-photo">
+                    <div class="candidate-intro">
+                        <h1>Candidate One</h1>
+                        <p>Class Representative Candidate</p>
+                    </div>
+                </div>
+                <div class="quote-box">
+                    "Together, we can build a stronger, more inclusive class community where every voice matters."
+                </div>
+            </div>
+
+            <div class="manifesto-section">
+                <h2>🎯 Vision Statement</h2>
+                <p>
+                    As your Class Representative, I envision a collaborative and transparent environment where student concerns 
+                    are heard and acted upon swiftly. My goal is to bridge the gap between students and faculty, ensuring 
+                    that our collective voice shapes the decisions that affect our academic journey.
+                </p>
+            </div>
+
+            <div class="manifesto-section">
+                <h2>📚 Academic Excellence</h2>
+                <h3>Key Initiatives:</h3>
+                <ul>
+                    <li>Organize weekly peer study groups for challenging subjects</li>
+                    <li>Establish a mentorship program connecting seniors with juniors</li>
+                    <li>Coordinate guest lectures from industry professionals</li>
+                    <li>Create a shared resource library for exam preparation materials</li>
+                    <li>Advocate for extended library hours during examination periods</li>
+                </ul>
+            </div>
+
+            <div class="manifesto-section">
+                <h2>🤝 Student Welfare</h2>
+                <h3>My Commitments:</h3>
+                <ul>
+                    <li>Monthly open forums for students to voice concerns directly</li>
+                    <li>Implement a transparent feedback mechanism for course improvements</li>
+                    <li>Work with administration to improve classroom infrastructure</li>
+                    <li>Ensure fair representation in academic committees</li>
+                    <li>Advocate for mental health and wellness resources</li>
+                </ul>
+            </div>
+
+            <div class="manifesto-section">
+                <h2>🎉 Community Building</h2>
+                <h3>Activities & Engagement:</h3>
+                <ul>
+                    <li>Organize quarterly class bonding events and activities</li>
+                    <li>Facilitate technical workshops and skill development sessions</li>
+                    <li>Coordinate class participation in college cultural events</li>
+                    <li>Establish class social media channels for better communication</li>
+                    <li>Create networking opportunities with alumni</li>
+                </ul>
+            </div>
+
+            <div class="manifesto-section">
+                <h2>💡 Innovation & Technology</h2>
+                <h3>Forward-Thinking Solutions:</h3>
+                <ul>
+                    <li>Develop a class portal for sharing notes and assignments</li>
+                    <li>Implement digital voting for class decisions</li>
+                    <li>Organize hackathons and coding competitions</li>
+                    <li>Promote collaborative projects with industry partnerships</li>
+                    <li>Encourage participation in technical conferences and seminars</li>
+                </ul>
+            </div>
+
+            <div class="manifesto-section">
+                <h2>📞 Communication & Transparency</h2>
+                <p>
+                    I believe in complete transparency. As your representative, I will:
+                </p>
+                <ul>
+                    <li>Provide monthly updates on all class-related decisions</li>
+                    <li>Maintain open office hours for individual consultations</li>
+                    <li>Create detailed minutes of all meetings with faculty</li>
+                    <li>Respond to student queries within 24 hours</li>
+                    <li>Conduct regular surveys to gauge student satisfaction</li>
+                </ul>
+            </div>
+
+            <div style="text-align: center; margin-top: 3rem;">
+                <a href="{{ url_for('vote') }}" class="back-btn">← Back to Voting</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='jss/theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='jss/cursor.js') }}"></script>
+    <script src="{{ url_for('static', filename='jss/background-particles.js') }}"></script>
+</body>
+
+</html>

@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Manifesto for Candidate Five - Class Representative Election">
+    <title>Candidate Five - Manifesto — RVCE E-Vote</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗳️</text></svg>">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        .manifesto-container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 2rem;
+            animation: fadeIn 0.6s ease-in-out;
+        }
+
+        .manifesto-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+            border-radius: 16px;
+            color: white;
+        }
+
+        .candidate-profile {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .candidate-photo {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid white;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .candidate-intro h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .candidate-intro p {
+            font-size: 1.2rem;
+            opacity: 0.95;
+        }
+
+        .manifesto-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .manifesto-section:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .manifesto-section h2 {
+            color: var(--primary);
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .manifesto-section h3 {
+            color: var(--text-primary);
+            font-size: 1.3rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .manifesto-section ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .manifesto-section li {
+            padding: 0.75rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .manifesto-section li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .back-btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 2rem;
+        }
+
+        .back-btn:hover {
+            background: var(--primary-hover);
+            transform: translateX(-4px);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .quote-box {
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary);
+            padding: 1.5rem;
+            margin: 2rem 0;
+            font-style: italic;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar" role="navigation" aria-label="Main Navigation">
+        <a href="{{ url_for('home') }}" class="logo" style="text-decoration: none;" aria-label="E-Vote Home">RVCE
+            E-Vote</a>
+        <div class="nav-links">
+            <a href="{{ url_for('dashboard') }}" class="nav-item">Home</a>
+            <a href="{{ url_for('vote') }}" class="nav-item">Vote</a>
+            <a href="{{ url_for('results') }}" class="nav-item">Results</a>
+            <a href="{{ url_for('architecture') }}" class="nav-item">System Info</a>
+
+            <div class="nav-actions">
+                <span class="user-pill" aria-label="Logged in as student">{{ session['student_id'] }}</span>
+                <button id="themeToggleBtn" class="nav-btn theme-btn" onclick="toggleTheme()"
+                    aria-label="Toggle Dark/Light Mode">
+                    <span class="theme-icon">🌙</span>
+                </button>
+                <a href="{{ url_for('logout') }}" class="nav-btn logout-btn" aria-label="Logout">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-wrapper">
+        <div class="manifesto-container">
+            <div class="manifesto-header">
+                <div class="candidate-profile">
+                    <img src="{{ url_for('static', filename='images/cand5.jpg') }}" alt="Candidate Five"
+                        class="candidate-photo">
+                    <div class="candidate-intro">
+                        <h1>Candidate Five</h1>
+                        <p>Class Representative Candidate</p>
+                    </div>
+                </div>
+                <div class="quote-box">
+                    "Excellence is not a destination, it's a continuous journey. Let's excel together!"
+                </div>
+            </div>
+
+            <div class="manifesto-section">
+                <h2>🎯 Results-Oriented Leadership</h2>
+                <p>
+                    I believe in measurable outcomes and concrete results. My campaign is built on specific, achievable
+                    goals with clear timelines. I won't make empty promises - instead, I'll deliver tangible
+                    improvements
+                    that enhance our academic experience and prepare us for future success.
+                </p>
+            </div>
+
+            <div class="manifesto-section">
+                <h2>📊 Academic Performance Enhancement</h2>
+                <h3>Concrete Deliverables:</h3>
+                <ul>
+                    <li>Launch a comprehensive exam preparation program starting 4 weeks before finals</li>
+                    <li>Negotiate with faculty for at least 2 extra doubt-clearing sessions per subject</li>
+                    <li>Create subject-specific study materials reviewed by toppers</li>
+                    <li>Implement a class-wide GPA improvement target with tracking</li>
+                    <li>Arrange special coaching for difficult subjects with low pass rates</li>
+                </ul>
+            </div>
+
+            <div class="manifesto-section">
+                <h2>💼 Industry Connect & Placement</h2>
+                <h3>Building Your Future:</h3>
+                <ul>
+                    <li>Organize minimum 4 industry expert sessions per semester</li>
+                    <li>Facilitate company visits and internship opportunities</li>
+                    <li>Conduct weekly aptitude and technical skill-building sessions</li>
+                    <li>Create a class placement preparation WhatsApp group with daily challenges</li>
+                    <li>Invite alumni from top companies for guidance and referrals</li>
+                </ul>
+            </div>
+
+            <div class="manifesto-section">
+                <h2>🏅 Skill Development Programs</h2>
+                <h3>Beyond the Curriculum:</h3>
+                <ul>
+                    <li>Organize monthly technical workshops on trending technologies</li>
+                    <li>Facilitate certification course group enrollments at discounted rates</li>
+                    <li>Conduct public speaking and presentation skills training</li>
+                    <li>Arrange competitive programming contests with prizes</li>
+                    <li>Create project collaboration teams for building portfolio-worthy applications</li>
+                </ul>
+            </div>
+
+            <div class="manifesto-section">
+                <h2>⚡ Efficiency & Time Management</h2>
+                <h3>Streamlining Processes:</h3>
+                <ul>
+                    <li>Negotiate for advance assignment release to enable better planning</li>
+                    <li>Create a centralized class calendar with all deadlines and events</li>
+                    <li>Implement automated reminder systems for important dates</li>
+                    <li>Advocate for consolidated exam schedules with adequate gaps</li>
+                    <li>Reduce unnecessary bureaucratic delays in academic processes</li>
+                </ul>
+            </div>
+
+            <div class="manifesto-section">
+                <h2>🎖️ Recognition & Motivation</h2>
+                <h3>Celebrating Success:</h3>
+                <ul>
+                    <li>Establish "Student of the Month" awards for various categories</li>
+                    <li>Recognize academic, cultural, and sports achievements publicly</li>
+                    <li>Maintain a class hall of fame showcasing exceptional performances</li>
+                    <li>Organize end-of-semester appreciation events</li>
+                    <li>Create opportunities for students to showcase their talents</li>
+                </ul>
+            </div>
+
+            <div class="manifesto-section">
+                <h2">📈 Progress Tracking & Accountability</h2>
+                    <p>
+                        Every month, I will publish a progress report showing:
+                    </p>
+                    <ul>
+                        <li>Initiatives launched vs. initiatives completed</li>
+                        <li>Student satisfaction scores from anonymous surveys</li>
+                        <li>Academic performance trends (average GPA, pass rates)</li>
+                        <li>Event participation rates and feedback</li>
+                        <li>Issues raised by students and resolution status</li>
+                    </ul>
+            </div>
+
+            <div class="manifesto-section">
+                <h2>🚀 My 100-Day Plan</h2>
+                <h3>First 100 Days Commitments:</h3>
+                <ul>
+                    <li>Week 1-2: Set up communication channels and conduct needs assessment survey</li>
+                    <li>Week 3-4: Meet with faculty to discuss immediate concerns and quick wins</li>
+                    <li>Month 2: Launch first skill development workshop and study group program</li>
+                    <li>Month 3: Organize first industry expert session and class bonding event</li>
+                    <li>Day 100: Publish comprehensive progress report with metrics</li>
+                </ul>
+            </div>
+
+            <div style="text-align: center; margin-top: 3rem;">
+                <a href="{{ url_for('vote') }}" class="back-btn">← Back to Voting</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='jss/theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='jss/cursor.js') }}"></script>
+    <script src="{{ url_for('static', filename='jss/background-particles.js') }}"></script>
+</body>
+
+</html>

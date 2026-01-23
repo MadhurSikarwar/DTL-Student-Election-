@@ -28,6 +28,30 @@
         .etherscan-link:hover {
             color: var(--primary-hover);
         }
+
+        .manifesto-btn {
+            display: inline-block;
+            margin-top: 1.2rem;
+            padding: 0.6rem 1.5rem;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(16, 185, 129, 0.3);
+        }
+
+        .manifesto-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        }
+
+        .manifesto-btn:active {
+            transform: translateY(0);
+        }
     </style>
 </head>
 
@@ -84,6 +108,11 @@
                         <div class="info">
                             <h3>{{ candidate.name }}</h3>
                             <p class="position">{{ candidate.position }}</p>
+                            <a href="{{ url_for('manifesto', candidate_id=candidate.id) }}" class="manifesto-btn"
+                                target="_blank" onclick="event.stopPropagation()"
+                                aria-label="View {{ candidate.name }}'s manifesto">
+                                📄 Manifesto
+                            </a>
                         </div>
                         <div class="selection-indicator">
                             <span class="circle"></span> Select
