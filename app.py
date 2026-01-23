@@ -500,7 +500,11 @@ def submit_vote():
             # ✅ SUCCESS! MARK USER AS VOTED IMMEDIATELY
             mark_user_as_voted(student_id)
             print(f"📝 {student_id} added to blacklist.")
-            return jsonify({"status": "success", "tx_hash": tx_hash_vote.hex()})
+            # Ensure hash has 0x prefix for Etherscan compatibility
+            tx_hash_str = tx_hash_vote.hex() if isinstance(tx_hash_vote.hex(), str) else str(tx_hash_vote.hex())
+            if not tx_hash_str.startswith('0x'):
+                tx_hash_str = '0x' + tx_hash_str
+            return jsonify({"status": "success", "tx_hash": tx_hash_str})
         else:
             return jsonify({"status": "error", "message": "Transaction reverted on chain"}), 500
 
