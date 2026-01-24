@@ -60,6 +60,9 @@
 
     --blob-color-1: #4f46e5;
     --blob-color-2: #ec4899;
+
+    /* PREMIUM TEXT GRADIENT (WHITE/GREY) */
+    --text-gradient-premium: linear-gradient(135deg, #fff 0%, #aaa 100%);
 }
 
 [data-theme="light"] {
@@ -86,6 +89,9 @@
 
     --blob-color-1: #a5b4fc;
     --blob-color-2: #fbcfe8;
+
+    /* PREMIUM TEXT GRADIENT (DARK SLATE) */
+    --text-gradient-premium: linear-gradient(135deg, #1e293b 0%, #475569 100%);
 
     --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.08);

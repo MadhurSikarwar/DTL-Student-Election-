@@ -474,21 +474,29 @@ def admin():
 def admin_dashboard():
     if not session.get("is_admin"): return redirect("/admin")
     
-    # Read Total Voters
+    # Read Total Voters & Recent Log
     total_votes = 0
+    voters = []
     eid = get_current_election_id()
     candidates = get_all_candidates()
 
     try:
         conn = get_db_connection()
+        # Count
         row = conn.execute("SELECT COUNT(*) FROM votes WHERE election_id = ?", (eid,)).fetchone()
         total_votes = row[0]
+        
+        # Recent Voters
+        cursor = conn.execute("SELECT student_id FROM votes WHERE election_id = ? ORDER BY id DESC LIMIT 50", (eid,))
+        voters = [r["student_id"] for r in cursor.fetchall()]
+        
         conn.close()
     except Exception as e:
         logger.error(f"⚠️ DB Error in Admin Dashboard: {e}")
     
     return render_template("admin_dashboard.html", 
                          total_votes=total_votes,
+                         voters=voters,
                          admin_email=session.get("admin_email"),
                          current_election_id=eid,
                          candidates=candidates)
