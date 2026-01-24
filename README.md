@@ -1,191 +1,112 @@
-# DTL Student Election
+# RVCE E-Vote 🗳️
 
-## Table of Contents
-- [Project Summary](#project-summary)
-- [Technology Stack](#technology-stack)
-- [Architecture Overview](#architecture-overview)
-- [Key Features](#key-features)
-- [Blockchain Integration](#blockchain-integration)
-- [Environment & Configuration](#environment--configuration)
-- [Directory Structure](#directory-structure)
-- [API Endpoints & Template Mapping](#api-endpoints--template-mapping)
-- [Deployment Workflow](#deployment-workflow)
-- [Testing & Verification](#testing--verification)
-- [Contribution Guidelines](#contribution-guidelines)
+**Secure, Transparent, and Immutable Student Election Platform**
 
----
+RVCE E-Vote is a modern, blockchain-based voting application designed to conduct student elections with absolute integrity. By leveraging the Ethereum blockchain (Sepolia Testnet) for vote recording and a robust Flask backend for election management, this platform ensures that every vote is permanent, verifiable, and tamper-proof.
 
-## 🚀 Quick Start
-**Use the all-in-one script to reset and launch the app:**
-```bash
-python reset_and_run.py
-```
-This script will:
-1.  Clean up old database files.
-2.  Reset election configuration.
-3.  Start the Flask server at `http://127.0.0.1:5000`.
+## 🌟 Key Features
 
-**To deploy a new smart contract:**
-```bash
-python deploy.py
-```
-(Be sure to restart the app after deployment!)
----
+### 🔐 Security & Integrity
+-   **Blockchain Backed**: Every vote is recorded as a transaction on the Ethereum blockchain, making it immutable.
+-   **One-Vote Policy**: Strict checks ensure each student can only vote once per election cycle.
+-   **Session Management**: Secure login and session handling to prevent unauthorized access.
 
-## Project Summary
-The **DTL Student Election** application is a Flask‑based web platform that enables students to securely vote for class representatives. It leverages **Firebase Authentication** for user identity and **Ethereum Sepolia testnet** (via Web3) to record votes on‑chain, ensuring immutability and transparency. Admins can create new election cycles, view results, and manage the voting process.
+### 📱 Modern User Experience
+-   **Responsive Design**: Fully optimized for Desktop, Tablet, and Mobile devices (iPhone/Android).
+-   **Hamburger Menu**: Smooth, app-like navigation drawer for mobile users.
+-   **Glassmorphism UI**: A premium, dark-mode-first aesthetic with vibrant gradients and animations.
+-   **Live Results**: Real-time visualization of vote counts with chart animations.
+
+### 🛠️ Admin Control Center
+-   **Dashboard**: A comprehensive admin panel to manage the entire election lifecycle.
+-   **Candidate Management**: Add, delete, and update candidates with photos and manifestos.
+-   **Election Control**: Start new elections, pause/resume voting, and set deadlines.
+-   **Activity Logs**: Monitor voting activity in real-time.
 
 ---
 
-## Technology Stack
-| Layer | Technology |
-|-------|------------|
-| Backend | Python 3.11, Flask, python‑dotenv |
-| Authentication | Firebase Admin SDK |
-| Blockchain | Web3.py, Sepolia testnet (public node) |
-| Data Storage | JSON files (`election_config.json`, `election_offsets.json`, per‑election vote blacklists) |
-| Database (optional) | SQLite (`database.db`) |
-| Deployment | Docker, Gunicorn, Heroku, Render |
-| CI/CD | GitHub Actions (docker‑publish.yml) |
-| Frontend | HTML5, Jinja2 templates, vanilla CSS |
+## 🏗️ Tech Stack
+
+-   **Backend**: Python, Flask
+-   **Database**: SQLite (User/Election Data), Ethereum Blockchain (Vote Records)
+-   **Frontend**: HTML5, CSS3 (Custom Design System), JavaScript (Vanilla)
+-   **Blockchain Interface**: Web3.py, Solidity (Smart Contract)
+-   **Visualization**: Chart.js
 
 ---
 
-## Architecture Overview
-```mermaid
-flowchart TD
-    subgraph Frontend
-        UI[HTML Templates & CSS]
-    end
-    subgraph Backend
-        FlaskApp[Flask (app.py)]
-        Firebase[Firebase Admin SDK]
-        Web3[Web3 (Sepolia)]
-        JSONStore[JSON Files]
-    end
-    UI -->|HTTP Requests| FlaskApp
-    FlaskApp -->|Auth Verify| Firebase
-    FlaskApp -->|Vote Tx| Web3
-    Web3 -->|Read/Write| JSONStore
-    FlaskApp -->|Read/Write| JSONStore
-    FlaskApp -->|Render| UI
-```
+## 📂 Project Structure
 
----
-
-## Key Features
-- **User Authentication** – Firebase ID token verification for login/registration.
-- **Secure Voting** – One‑time vote per student enforced via per‑election blacklist JSON files.
-- **Admin Dashboard** – View live vote counts, start new election cycles, and manage admin session.
-- **Manifesto Pages** – Individual candidate manifesto HTML pages.
-- **Result Page** – Real‑time results view (no‑cache headers).
-- **Blockchain Auditing** – Votes are recorded on Sepolia via a smart contract (`vote(uint256)` & `getVotes(uint256)`).
-- **Multi‑Election Support** – `election_config.json` tracks current election ID; offsets stored in `election_offsets.json`.
-
----
-
-## Blockchain Integration
-- **Contract Address** – `0x585a1801372e73BabAf4144D306bAF80A7496ae9` (default, configurable via `.env`).
-- **Functions**:
-  - `vote(uint256 candidateId)` – called from `/submit_vote` after funding a temporary wallet.
-  - `getVotes(uint256 candidateId)` – used by admin dashboard to display totals.
-- **Workflow**:
-  1. Admin private key loaded from `ADMIN_PRIVATE_KEY`.
-  2. Temporary wallet created per vote, funded with 0.005 ETH.
-  3. Transaction signed and sent; receipt awaited.
-  4. On success, student ID added to blacklist JSON.
-
----
-
-## Environment & Configuration
-Create a `.env` file (add to `.gitignore`):
-```
-FLASK_SECRET_KEY=super_secret_key
-RPC_URL=https://ethereum-sepolia.publicnode.com
-ADMIN_PRIVATE_KEY=your_admin_private_key
-CONTRACT_ADDRESS=0x...
-FIREBASE_CREDENTIALS_PATH=firebase_credentials.json
-ALLOWED_ADMIN_EMAIL=madhurrishis.is24@rvce.edu.in
-```
-- `python-dotenv` loads these at runtime.
-- `firebase_credentials.json` must be present (or set as a secret in deployment).
-
----
-
-## Directory Structure
 ```
 DTL FINAL PROTOTYPE/
-├─ app.py                 # Flask entry point
-├─ deploy.py              # Smart Contract Deployment
-├─ reset_and_run.py       # Helper to reset DB & start app
-├─ requirements.txt       # Python deps
-├─ .env (ignored)        # Env vars
-├─ firebase_credentials.json
-├─ election_config.json   # {"currentElectionId": N}
-├─ election_offsets.json  # {"N": [votes per candidate]}
-├─ election.db            # SQLite Database (Auto-created)
-├─ static/                # CSS, images, JS
-├─ templates/            # HTML/Jinja2 files
-│   ├─ dashboard.html
-│   ├─ login.html
-│   ├─ vote.html
-│   ├─ results.html
-│   ├─ manifesto.html
-│   └─ ...
-└─ README.md
+├── app.py                # Main Flask Application Entry Point
+├── database_init.py      # Database Initialization Script
+├── election.db           # SQLite Database File
+├── templates/            # HTML Templates (Login, Dashboard, Vote, etc.)
+├── static/               # Static Assets
+│   ├── css/              # Stylesheets (variables.css, login.css, hamburger.css...)
+│   ├── jss/              # JavaScript Logic
+│   └── images/           # Candidate Photos & Icons
+└── requirements.txt      # Python Dependencies
 ```
 
 ---
 
-## API Endpoints & Template Mapping
-| Route | Method | Purpose | Template |
-|-------|--------|---------|----------|
-| `/` | GET | Redirect to dashboard or login | – |
-| `/login` | GET/POST | Firebase login flow | `login.html` |
-| `/register` | GET | Registration page | `register.html` |
-| `/dashboard` | GET | User home with election ID | `dashboard.html` |
-| `/vote` | GET | Show candidate cards | `vote.html` |
-| `/submit_vote` | POST | Process vote, blockchain tx | – |
-| `/results` | GET | Show results (no‑cache) | `results.html` |
-| `/manifesto/<int:id>` | GET | Candidate manifesto page | `manifesto_candidate{id}.html` |
-| `/admin` | GET/POST | Admin login (Firebase) | `admin_login.html` |
-| `/admin/dashboard` | GET | Admin view of votes & start new election | `admin_dashboard.html` |
-| `/admin/start-new-election` | POST | Snapshot current votes, increment ID | – |
-| `/api/offsets` | GET | Return offsets JSON for current election | – |
+## 🚀 Setup & Installation
+
+### Prerequisites
+-   Python 3.8+
+-   Node.js (optional, for advanced tooling)
+-   An Ethereum Wallet (e.g., MetaMask) or Private Key for Admin actions.
+
+### 1. Clone & Install Dependencies
+Navigate to the project directory and install the required Python packages:
+```bash
+pip install -r requirements.txt
+```
+
+### 2. Environment Configuration
+Create a `.env` file in the root directory and add your blockchain credentials:
+```env
+PRIVATE_KEY=your_wallet_private_key
+INFURA_URL=your_infura_or_alchemy_url
+CONTRACT_ADDRESS=deployed_contract_address
+```
+
+### 3. Initialize Database
+Set up the local SQLite database:
+```bash
+python database_init.py
+```
+
+### 4. Run the Application
+Start the Flask server:
+```bash
+python app.py
+```
+Access the application at: `http://127.0.0.1:5000`
 
 ---
 
-## Deployment Workflow
-1. **Local Development**
-   ```bash
-   pip install -r requirements.txt
-   flask run
-   ```
-2. **Docker** (recommended)
-   ```bash
-   docker build -t dtl-election .
-   docker run -p 5000:5000 --env-file .env dtl-election
-   ```
-3. **Heroku / Render** – set environment variables via dashboard, push repo, and enable the provided `Procfile`.
-4. **CI/CD** – GitHub Actions builds and pushes the Docker image to GHCR on each push to `main`.
+## 📖 Usage Guide
+
+### For Students
+1.  **Login**: Use your University Email (e.g., `name@rvce.edu.in`).
+2.  **Dashboard**: View election status and quick links.
+3.  **Vote**: Select your preferred candidate on the voting page. You can view manifestos before deciding.
+4.  **Confirm**: Submit your vote. Wait for the blockchain transaction to confirm.
+5.  **Results**: Check the live standings on the results page.
+
+### For Admins
+1.  **Access**: Navigate to `/admin` or click "Admin Access" on the login page.
+2.  **Manage**: Use the dashboard to add candidates or change election settings.
+3.  **Monitor**: Watch the voter log and ensure smooth operation.
 
 ---
 
-## Testing & Verification
-- **Manual**: Navigate through login → vote → results; ensure a student cannot vote twice.
-- **Blockchain**: Verify transaction hash appears on Sepolia explorer and `getVotes` reflects the new count.
-- **Admin**: Start a new election and confirm `election_config.json` and `election_offsets.json` update.
-- **Automated** (optional): Add Flask test client scripts to hit each route and assert expected status codes.
+## 🤝 Contributing
+This is a prototype compliant with DTL (Design Thinking Lab) requirements. Future improvements may include decentralized identity verification and multi-election support.
 
 ---
 
-## Contribution Guidelines
-1. Fork the repository and create a feature branch.
-2. Follow the existing code style (PEP8, type hints optional).
-3. Add/modify tests for new functionality.
-4. Update `PROJECT_OVERVIEW.md` if you add major features.
-5. Submit a pull request with a clear description.
-
----
-
-*Generated on 2026‑01‑24.*
+**Built with ❤️ for RVCE**
