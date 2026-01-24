@@ -1,4 +1,4 @@
-# DTL Student Election
+# Project Overview – DTL Student Election
 
 ## Table of Contents
 - [Project Summary](#project-summary)
@@ -30,7 +30,7 @@ The **DTL Student Election** application is a Flask‑based web platform that en
 | Database (optional) | SQLite (`database.db`) |
 | Deployment | Docker, Gunicorn, Heroku, Render |
 | CI/CD | GitHub Actions (docker‑publish.yml) |
-| Frontend | HTML5, Jinja2 templates, vanilla CSS |
+| Frontend | HTML5, Jinja2 templates, vanilla CSS (custom design) |
 
 ---
 
