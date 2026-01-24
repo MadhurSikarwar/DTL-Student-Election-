@@ -21,6 +21,7 @@ load_dotenv()
 # FIX: Use absolute path so the file is ALWAYS found
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CONFIG_FILE = os.path.join(BASE_DIR, "election_config.json")
+DB_PATH = os.path.join(BASE_DIR, "election.db")
 
 
 app = Flask(__name__)
