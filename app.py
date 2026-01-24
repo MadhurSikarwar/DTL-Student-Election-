@@ -222,10 +222,10 @@ def add_candidate(name, position, image, manifesto):
         )
         conn.commit()
         conn.close()
-        return True
+        return True, "Success"
     except Exception as e:
         logger.error(f"❌ Error Adding Candidate: {e}")
-        return False
+        return False, str(e)
 
 def delete_candidate(cid):
     """Soft deletes a candidate (sets active=0)."""
@@ -518,10 +518,11 @@ def admin_add_candidate():
             manifesto_file.save(manifesto_path)
             manifesto_value = manifesto_filename
             
-        if add_candidate(name, position, image_filename, manifesto_value):
+        success, msg = add_candidate(name, position, image_filename, manifesto_value)
+        if success:
             return jsonify({"status": "success", "message": "Candidate Added!"})
         else:
-            return jsonify({"status": "error", "message": "DB Error"})
+            return jsonify({"status": "error", "message": f"DB Error: {msg}"})
     except Exception as e:
         logger.error(f"Error adding candidate: {e}")
         return jsonify({"status": "error", "message": str(e)})
