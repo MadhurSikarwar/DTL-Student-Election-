@@ -12,6 +12,8 @@ from dotenv import load_dotenv
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
+from database_init import init_db
+
 # Load environment variables from .env file
 # Load environment variables from .env file
 load_dotenv()
