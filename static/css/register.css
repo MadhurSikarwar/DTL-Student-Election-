@@ -326,6 +326,7 @@ input::placeholder {
 }
 
 .error-msg {
+    display: none;
     background: var(--accent-red-bg);
     color: var(--accent-red);
     padding: 0.8rem;
