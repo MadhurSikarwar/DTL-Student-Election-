@@ -496,8 +496,12 @@ def admin_add_candidate():
         # Handle Image
         image_filename = "default.jpg"
         if image_file:
+            # FIX: Ensure images directory exists
+            images_dir = os.path.join(BASE_DIR, "static/images")
+            os.makedirs(images_dir, exist_ok=True)
+            
             image_filename = f"{int(time.time())}_{image_file.filename}"
-            image_path = os.path.join(BASE_DIR, "static/images", image_filename)
+            image_path = os.path.join(images_dir, image_filename)
             image_file.save(image_path)
 
         # Handle Manifesto (File vs Text)
