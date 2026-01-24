@@ -5,9 +5,12 @@ import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "election.db")
 
-def init_db():
+def init_db(db_path=None):
+    if db_path is None:
+        db_path = DB_PATH
+        
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn = sqlite3.connect(db_path)
         cur = conn.cursor()
         
         # 1. Create Vote Tracking Table
@@ -69,7 +72,7 @@ def init_db():
         
         conn.commit()
         conn.close()
-        print(f"✅ Database initialized successfully at: {DB_PATH}")
+        print(f"✅ Database initialized successfully at: {db_path}")
         return True
     except Exception as e:
         print(f"❌ Database initialization failed: {e}")
