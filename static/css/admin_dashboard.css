@@ -278,24 +278,30 @@ body {
 
 /* Textured Input Boxes */
 .admin-input {
-    background: rgba(15, 23, 42, 0.4);
-    border: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.07);
+    /* Lighter glass effect */
+    border: 1px solid rgba(255, 255, 255, 0.15);
     padding: 1rem;
-    color: white;
+    color: var(--text-main);
+    /* Adapt to theme */
     border-radius: 8px;
     transition: all 0.3s ease;
     width: 100%;
     /* "Boxy" feel */
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
     box-sizing: border-box;
-    /* Fix overflow */
+}
+
+.admin-input::placeholder {
+    color: var(--text-muted);
+    opacity: 0.8;
 }
 
 .admin-input:focus {
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
     outline: none;
-    background: rgba(15, 23, 42, 0.8);
 }
 
 /* File Input Styling */
@@ -666,6 +672,7 @@ input[type="file"]::file-selector-button:hover {
     gap: 6px;
 }
 
+/* RESPONSIVE */
 .no-votes-msg {
     text-align: center;
     padding: 4rem;
@@ -675,4 +682,91 @@ input[type="file"]::file-selector-button:hover {
             rgba(255, 255, 255, 0.01) 10px,
             transparent 10px,
             transparent 20px);
+}
+
+@media (max-width: 900px) {
+    .container {
+        width: 100%;
+        padding: 0 1rem;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .admin-nav {
+        /* flex-direction: column;  <-- REMOVED to allow row layout for Burger */
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    /* Center brand but keep it in row if possible, or let flex-wrap handle it */
+    .admin-brand {
+        font-size: 1.2rem;
+    }
+
+    /* .admin-user is triggered to hide by hamburger.css @ max-width 900px */
+
+    .admin-user {
+        flex-wrap: wrap;
+    }
+
+    .add-candidate-form {
+        grid-template-columns: 1fr;
+        padding: 1.5rem;
+    }
+
+    .form-title {
+        text-align: center;
+        display: block;
+    }
+
+    .control-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .reset-zone {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+    }
+
+    .btn-reset {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .card .value {
+        font-size: 2.5rem;
+    }
+
+    .action-area {
+        padding: 1.5rem;
+    }
+
+    /* Table Scroll for Mobile */
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .admin-table th,
+    .admin-table td {
+        white-space: nowrap;
+        padding: 0.8rem;
+    }
+
+    .photo-upload-group {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .btn-add {
+        width: 100%;
+        margin-top: 1rem;
+    }
 }

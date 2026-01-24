@@ -10,6 +10,7 @@
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
     <!-- Optional for icons -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hamburger.css') }}">
 </head>
 
 <body>
@@ -19,6 +20,15 @@
         <div class="admin-brand">
             RVCE E-VOTE <span class="badge">ADMIN</span>
         </div>
+
+        <!-- HAMBURGER ICON -->
+        <div class="hamburger" onclick="toggleMenu()">
+            <div class="line1"></div>
+            <div class="line2"></div>
+            <div class="line3"></div>
+        </div>
+
+        <!-- DESKTOP NAV -->
         <div class="admin-user">
             <div class="user-pill">
                 👤 {{ admin_email }}
@@ -28,6 +38,24 @@
                 <span class="theme-icon">🌙</span>
             </button>
             <a href="/admin/logout" class="logout-btn">Log Out</a>
+        </div>
+
+        <!-- MOBILE MENU DRAWER -->
+        <div class="mobile-menu" id="mobileMenu">
+
+
+            <!-- No navigational links for Admin, just actions -->
+            <div class="mobile-actions" style="margin-top: 1rem;">
+                <span class="user-pill" style="display: block; text-align: center;">👤 {{ admin_email }}</span>
+
+                <button onclick="toggleTheme()" class="nav-btn theme-btn"
+                    style="width: 100%; justify-content: center; margin-top: 1rem; background: var(--bg-surface-hover);">
+                    Toggle Theme 🌙
+                </button>
+
+                <a href="/admin/logout" class="logout-btn"
+                    style="text-align: center; display: block; margin-top: 1rem;">Log Out</a>
+            </div>
         </div>
     </nav>
 
@@ -237,6 +265,7 @@
     </div>
 
     <script src="{{ url_for('static', filename='jss/admin_dashboard.js') }}"></script>
+    <script src="{{ url_for('static', filename='jss/hamburger.js') }}"></script>
     <script src="{{ url_for('static', filename='jss/theme.js') }}"></script>
     <script src="{{ url_for('static', filename='jss/background-particles.js') }}"></script>
 </body>

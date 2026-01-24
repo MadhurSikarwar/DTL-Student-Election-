@@ -414,3 +414,45 @@ body::after {
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(255, 0, 51, 0.6);
 }
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+    .navbar {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .nav-actions {
+        margin-left: 0;
+        padding-left: 0;
+        border-left: none;
+        width: 100%;
+        justify-content: center;
+        margin-top: 1rem;
+    }
+
+    .main-wrapper {
+        padding-top: 180px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        width: 100%;
+        padding: 0 1rem;
+    }
+
+    .welcome-card {
+        padding: 1.5rem;
+        min-height: auto;
+    }
+
+    .welcome-card h2 {
+        font-size: 1.8rem;
+    }
+
+    .options-grid {
+        grid-template-columns: 1fr;
+    }
+}

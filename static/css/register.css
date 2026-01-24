@@ -374,6 +374,11 @@ input::placeholder {
         width: 100%;
         padding: 2rem;
     }
+
+    .navbar {
+        gap: 1rem;
+        padding: 1rem;
+    }
 }
 
 /* --- INLINE STYLES EXTRACTED --- */

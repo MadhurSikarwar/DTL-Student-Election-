@@ -19,6 +19,7 @@
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hamburger.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 
@@ -30,6 +31,15 @@
                 style="font-size: 0.7rem; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; margin-left: 8px;">Cycle
                 #{{ current_election_id }}</span>
         </a>
+
+        <!-- HAMBURGER ICON -->
+        <div class="hamburger" onclick="toggleMenu()">
+            <div class="line1"></div>
+            <div class="line2"></div>
+            <div class="line3"></div>
+        </div>
+
+        <!-- DESKTOP NAV -->
         <div class="nav-links">
             <a href="{{ url_for('dashboard') }}" class="nav-item active">Home</a>
             <a href="{{ url_for('vote') }}" class="nav-item">Vote</a>
@@ -43,6 +53,21 @@
                     <span class="theme-icon">🌙</span>
                 </button>
                 <a href="{{ url_for('logout') }}" class="nav-btn logout-btn" aria-label="Logout">Logout</a>
+            </div>
+        </div>
+
+        <!-- MOBILE MENU DRAWER -->
+        <div class="mobile-menu" id="mobileMenu">
+
+
+            <a href="{{ url_for('dashboard') }}" class="mobile-nav-link">Home</a>
+            <a href="{{ url_for('vote') }}" class="mobile-nav-link">Vote</a>
+            <a href="{{ url_for('results') }}" class="mobile-nav-link">Results</a>
+            <a href="{{ url_for('architecture') }}" class="mobile-nav-link">System Info</a>
+
+            <div class="mobile-actions">
+                <span class="user-pill">{{ student_id }}</span>
+                <a href="{{ url_for('logout') }}" class="nav-btn logout-btn" style="text-align: center;">Logout</a>
             </div>
         </div>
     </nav>
@@ -96,6 +121,7 @@
     </footer>
 
     <!-- Scripts -->
+    <script src="{{ url_for('static', filename='jss/hamburger.js') }}"></script>
     <script src="{{ url_for('static', filename='jss/dashboard.js') }}"></script>
     <script src="{{ url_for('static', filename='jss/theme.js') }}"></script>
     <script src="{{ url_for('static', filename='jss/cursor.js') }}"></script>

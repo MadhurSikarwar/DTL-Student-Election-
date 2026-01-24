@@ -485,3 +485,44 @@ body::before {
         grid-template-columns: 1fr;
     }
 }
+
+@media (max-width: 900px) {
+    .navbar {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .nav-actions {
+        margin-left: 0;
+        padding-left: 0;
+        border-left: none;
+        width: 100%;
+        justify-content: center;
+        margin-top: 1rem;
+    }
+
+    .main-wrapper {
+        padding-top: 180px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        width: 100%;
+        padding: 0 1rem;
+    }
+
+    .winner-box {
+        height: auto;
+        padding: 2rem 1rem;
+    }
+
+    .winner-box h2 {
+        font-size: 1.5rem;
+    }
+
+    .crown-icon {
+        font-size: 2.5rem;
+    }
+}

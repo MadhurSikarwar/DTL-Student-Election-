@@ -604,3 +604,56 @@ input::placeholder {
         opacity: 1;
     }
 }
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+    .navbar {
+        /* flex-direction: column;  <-- REMOVED for Hamburger */
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .nav-actions {
+        margin-left: 0;
+        padding-left: 0;
+        border-left: none;
+        width: 100%;
+        justify-content: center;
+        margin-top: 1rem;
+    }
+
+    .main-wrapper {
+        padding-top: 180px;
+    }
+
+    .container {
+        width: 90%;
+        min-height: auto;
+        flex-direction: column;
+        margin-bottom: 2rem;
+    }
+
+    .left-panel {
+        width: 100%;
+        height: 200px;
+    }
+
+    .right-panel {
+        width: 100%;
+        padding: 2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .left-panel {
+        height: 150px;
+    }
+
+    .right-panel {
+        padding: 1.5rem;
+    }
+
+    .form-header h2 {
+        font-size: 1.8rem;
+    }
+}

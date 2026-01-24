@@ -13,12 +13,22 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/manifesto.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hamburger.css') }}">
 </head>
 
 <body>
     <nav class="navbar" role="navigation" aria-label="Main Navigation">
         <a href="{{ url_for('home') }}" class="logo" style="text-decoration: none;" aria-label="E-Vote Home">RVCE
             E-Vote</a>
+
+        <!-- HAMBURGER ICON -->
+        <div class="hamburger" onclick="toggleMenu()">
+            <div class="line1"></div>
+            <div class="line2"></div>
+            <div class="line3"></div>
+        </div>
+
+        <!-- DESKTOP NAV -->
         <div class="nav-links">
             <a href="{{ url_for('dashboard') }}" class="nav-item">Home</a>
             <a href="{{ url_for('vote') }}" class="nav-item">Vote</a>
@@ -32,6 +42,21 @@
                     <span class="theme-icon">🌙</span>
                 </button>
                 <a href="{{ url_for('logout') }}" class="nav-btn logout-btn" aria-label="Logout">Logout</a>
+            </div>
+        </div>
+
+        <!-- MOBILE MENU DRAWER -->
+        <div class="mobile-menu" id="mobileMenu">
+
+
+            <a href="{{ url_for('dashboard') }}" class="mobile-nav-link">Home</a>
+            <a href="{{ url_for('vote') }}" class="mobile-nav-link">Vote</a>
+            <a href="{{ url_for('results') }}" class="mobile-nav-link">Results</a>
+            <a href="{{ url_for('architecture') }}" class="mobile-nav-link">System Info</a>
+
+            <div class="mobile-actions">
+                <span class="user-pill">{{ session['student_id'] }}</span>
+                <a href="{{ url_for('logout') }}" class="nav-btn logout-btn" style="text-align: center;">Logout</a>
             </div>
         </div>
     </nav>
@@ -101,6 +126,7 @@
     <script src="{{ url_for('static', filename='jss/theme.js') }}"></script>
     <script src="{{ url_for('static', filename='jss/cursor.js') }}"></script>
     <script src="{{ url_for('static', filename='jss/background-particles.js') }}"></script>
+    <script src="{{ url_for('static', filename='jss/hamburger.js') }}"></script>
 </body>
 
 </html>

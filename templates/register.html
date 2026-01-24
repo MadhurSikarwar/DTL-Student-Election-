@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+<!-- Updated for Hamburger Menu -->
 
 <head>
     <meta charset="UTF-8">
@@ -7,6 +8,7 @@
     <title>Register — RVCE E-Vote</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/register.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hamburger.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -17,6 +19,15 @@
 
     <nav class="navbar">
         <a href="{{ url_for('home') }}" class="logo" style="text-decoration: none;">RVCE E-Vote</a>
+
+        <!-- HAMBURGER ICON -->
+        <div class="hamburger" onclick="toggleMenu()">
+            <div class="line1"></div>
+            <div class="line2"></div>
+            <div class="line3"></div>
+        </div>
+
+        <!-- DESKTOP NAV -->
         <div class="nav-links">
             <a href="{{ url_for('dashboard') }}" class="nav-item">Home</a>
             <a href="{{ url_for('vote') }}" class="nav-item">Vote</a>
@@ -28,6 +39,26 @@
                 </button>
                 <a href="{{ url_for('login') }}" class="nav-btn">Login</a>
                 <a href="{{ url_for('register') }}" class="nav-btn active">Register</a>
+            </div>
+        </div>
+
+        <!-- MOBILE MENU DRAWER -->
+        <div class="mobile-menu" id="mobileMenu">
+
+
+            <a href="{{ url_for('dashboard') }}" class="mobile-nav-link">Home</a>
+            <a href="{{ url_for('vote') }}" class="mobile-nav-link">Vote</a>
+            <a href="{{ url_for('results') }}" class="mobile-nav-link">Results</a>
+
+            <div class="mobile-actions">
+                <button class="nav-btn theme-btn" onclick="toggleTheme()"
+                    style="width: 100%; justify-content: center; margin-bottom: 1rem;">
+                    Toggle Theme 🌙
+                </button>
+                <a href="{{ url_for('login') }}" class="nav-btn"
+                    style="text-align: center; display: block; margin-bottom: 0.5rem;">Login</a>
+                <a href="{{ url_for('register') }}" class="nav-btn active"
+                    style="text-align: center; display: block;">Register</a>
             </div>
         </div>
     </nav>
@@ -81,6 +112,7 @@
     </div>
 
     <script src="{{ url_for('static', filename='jss/register.js') }}"></script>
+    <script src="{{ url_for('static', filename='jss/hamburger.js') }}"></script>
     <script src="{{ url_for('static', filename='jss/theme.js') }}"></script>
     <script src="{{ url_for('static', filename='jss/cursor.js') }}"></script>
     <script src="{{ url_for('static', filename='jss/background-particles.js') }}"></script>
