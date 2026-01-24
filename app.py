@@ -11,7 +11,13 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
 # Load environment variables from .env file
+# Load environment variables from .env file
 load_dotenv()
+
+# FIX: Use absolute path so the file is ALWAYS found
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+CONFIG_FILE = os.path.join(BASE_DIR, "election_config.json")
+
 
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "supersecretkey_rvce_election_2025")
