@@ -20,7 +20,6 @@ load_dotenv()
 
 # FIX: Use absolute path so the file is ALWAYS found
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-CONFIG_FILE = os.path.join(BASE_DIR, "election_config.json")
 DB_PATH = os.path.join(BASE_DIR, "election.db")
 
 
@@ -122,12 +121,16 @@ def get_db_connection():
     return conn
 
 def get_current_election_id():
-    """Reads the current election ID from config."""
+    """Reads the current election ID from the DB system_config."""
     try:
-        with open(CONFIG_FILE, 'r') as f:
-            data = json.load(f)
-            return data.get("currentElectionId", 1)
-    except:
+        conn = get_db_connection()
+        row = conn.execute("SELECT value FROM system_config WHERE key = 'current_election_id'").fetchone()
+        conn.close()
+        if row:
+            return int(row['value'])
+        return 1
+    except Exception as e:
+        logger.error(f"⚠️ Error reading election ID: {e}")
         return 1
 
 def has_user_voted(student_id):
@@ -158,8 +161,6 @@ def mark_user_as_voted(student_id):
             "INSERT INTO votes (student_id, election_id) VALUES (?, ?)",
             (student_id, eid)
         )
-        conn.commit()
-        conn.close()
         conn.commit()
         conn.close()
         logger.info(f"💾 SAVED: {student_id} voted in Election #{eid}")
@@ -597,16 +598,18 @@ def admin_get_election_status():
     })
 
 # FIX: Absolute path for offsets
-OFFSETS_FILE = os.path.join(BASE_DIR, "election_offsets.json")
-
 def get_current_offsets(eid):
-    """Returns the offsets for a specific election ID."""
-    if not os.path.exists(OFFSETS_FILE): return [0]*6
+    """Returns the offsets for a specific election ID from DB."""
     try:
-        with open(OFFSETS_FILE, 'r') as f:
-             data = json.load(f)
-             return data.get(str(eid), [0]*6)
-    except: return [0]*6
+        conn = get_db_connection()
+        row = conn.execute("SELECT offset_values FROM election_offsets WHERE election_id = ?", (eid,)).fetchone()
+        conn.close()
+        if row:
+            return json.loads(row['offset_values'])
+        return [0] * 6
+    except Exception as e:
+        logger.error(f"⚠️ Error reading offsets: {e}")
+        return [0] * 6
 
 @app.route("/api/offsets")
 def api_offsets():
@@ -643,38 +646,39 @@ def start_new_election():
         except Exception as e:
              return jsonify({"status": "error", "message": f"Blockchain Read Failed: {str(e)}"}), 500
 
-        # 1. Read Current ID
-        current_id = 1
-        if os.path.exists(CONFIG_FILE):
-             with open(CONFIG_FILE, 'r') as f:
-                data = json.load(f)
-                current_id = data.get("currentElectionId", 1)
+        # 1. Read Current ID (from DB)
+        current_id = get_current_election_id()
         
         # 2. Increment ID
         new_id = current_id + 1
         
-        # 3. Save Offset for the NEW ID
-        # The offset for Cycle N is the Total Votes at end of Cycle N-1
-        all_offsets = {}
-        if os.path.exists(OFFSETS_FILE):
-             try:
-                 with open(OFFSETS_FILE, 'r') as f: all_offsets = json.load(f)
-             except: pass
-        
-        all_offsets[str(new_id)] = current_votes
-        
-        with open(OFFSETS_FILE, 'w') as f:
-            json.dump(all_offsets, f, indent=4)
+        # 3. Save Offset AND New ID to DB (Transaction)
+        try:
+            conn = get_db_connection()
+            # Save Offsets for NEW ID (Offsets for Cycle N = Snapshot at end of Cycle N-1)
+            conn.execute(
+                "INSERT OR REPLACE INTO election_offsets (election_id, offset_values) VALUES (?, ?)",
+                (new_id, json.dumps(current_votes))
+            )
+            
+            # Update Current ID
+            conn.execute(
+                "INSERT OR REPLACE INTO system_config (key, value) VALUES ('current_election_id', ?)",
+                (str(new_id),)
+            )
 
-        # 4. Save Config (Atomic-ish)
-        new_config = {"currentElectionId": new_id}
-        with open(CONFIG_FILE, 'w') as f:
-            json.dump(new_config, f, indent=4)
-            
-        new_config = {"currentElectionId": new_id}
-        with open(CONFIG_FILE, 'w') as f:
-            json.dump(new_config, f, indent=4)
-            
+            # 4. Initialize Settings for NEW ID (So voting is allowed immediately)
+            conn.execute(
+                "INSERT OR IGNORE INTO election_settings (election_id, is_paused) VALUES (?, 0)",
+                (new_id,)
+            )
+
+            conn.commit()
+            conn.close()
+        except Exception as db_e:
+             logger.error(f"❌ Database Write Failed: {db_e}")
+             return jsonify({"status": "error", "message": f"DB Error: {db_e}"}), 500
+
         logger.info(f"🔄 ELECTION CYCLE UPDATED: {current_id} -> {new_id} with Offsets {current_votes}")
         return jsonify({"status": "success", "new_election_id": new_id})
         

@@ -65,6 +65,25 @@ def init_db(db_path=None):
         # 5. Insert default settings for election 1 if missing
         cur.execute("INSERT OR IGNORE INTO election_settings (election_id, is_paused) VALUES (1, 0)")
 
+        # 6. Create System Config Table (Replaces election_config.json)
+        cur.execute("""
+        CREATE TABLE IF NOT EXISTS system_config (
+            key TEXT PRIMARY KEY,
+            value TEXT NOT NULL
+        );
+        """)
+
+        # 7. Create Election Offsets Table (Replaces election_offsets.json)
+        cur.execute("""
+        CREATE TABLE IF NOT EXISTS election_offsets (
+            election_id INTEGER PRIMARY KEY,
+            offset_values TEXT NOT NULL
+        );
+        """)
+
+        # 8. Seed Default System Config (current_election_id = 1)
+        cur.execute("INSERT OR IGNORE INTO system_config (key, value) VALUES ('current_election_id', '1')")
+
 
         
         # 2. Check and clean up legacy info if needed
