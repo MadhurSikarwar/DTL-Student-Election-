@@ -1,35 +1,37 @@
 import sqlite3
 import os
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "election.db")
+# Use absolute path for reliability
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "election.db")
 
-conn = sqlite3.connect(DB_PATH)
-cur = conn.cursor()
+def init_db():
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cur = conn.cursor()
+        
+        # 1. Create Vote Tracking Table
+        # election_id + student_id must be UNIQUE together
+        cur.execute("""
+        CREATE TABLE IF NOT EXISTS votes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            student_id TEXT NOT NULL,
+            election_id INTEGER NOT NULL,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(student_id, election_id)
+        );
+        """)
+        
+        # 2. Check and clean up legacy info if needed
+        # (Optional: Add migration logic here if we were preserving old JSON data)
+        
+        conn.commit()
+        conn.close()
+        print(f"✅ Database initialized successfully at: {DB_PATH}")
+        return True
+    except Exception as e:
+        print(f"❌ Database initialization failed: {e}")
+        return False
 
-# Create Users Table
-cur.execute("""
-CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    student_id TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL,
-    eth_address TEXT NOT NULL
-);
-""")
-
-# Create Local Votes Table (safe fallback)
-cur.execute("""
-CREATE TABLE IF NOT EXISTS local_votes (
-    candidate_id INTEGER PRIMARY KEY,
-    count INTEGER DEFAULT 0
-);
-""")
-
-# Insert default vote records if missing
-cur.execute("INSERT OR IGNORE INTO local_votes (candidate_id, count) VALUES (1, 0)")
-cur.execute("INSERT OR IGNORE INTO local_votes (candidate_id, count) VALUES (2, 0)")
-cur.execute("INSERT OR IGNORE INTO local_votes (candidate_id, count) VALUES (3, 0)")
-
-conn.commit()
-conn.close()
-
-print("Database initialized successfully at:", DB_PATH)
+if __name__ == "__main__":
+    init_db()

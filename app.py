@@ -1,17 +1,37 @@
 import os
 import json
 import time
+import logging
 from flask import Flask, render_template, request, redirect, session, jsonify, make_response
 import firebase_admin
 from firebase_admin import credentials, auth
 from web3 import Web3
 from dotenv import load_dotenv
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 # Load environment variables from .env file
 load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "supersecretkey_rvce_election_2025")
+
+# ==========================================================
+# 🛡️ RATE LIMITING
+# ==========================================================
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://"
+)
+
+# Configure Logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 # ==========================================================
 # ⚙️ BLOCKCHAIN CONFIGURATION (FAST MODE 🚀)
@@ -26,9 +46,10 @@ ADMIN_PRIVATE_KEY = os.getenv("ADMIN_PRIVATE_KEY")
 
 try:
     ADMIN_ADDRESS = w3.eth.account.from_key(ADMIN_PRIVATE_KEY).address
-    print(f"✅ Admin Wallet Loaded: {ADMIN_ADDRESS}")
+    ADMIN_ADDRESS = w3.eth.account.from_key(ADMIN_PRIVATE_KEY).address
+    logger.info(f"✅ Admin Wallet Loaded: {ADMIN_ADDRESS}")
 except Exception as e:
-    print("⚠️ WARNING: Private Key not set correctly yet.")
+    logger.warning("⚠️ WARNING: Private Key not set correctly yet.")
     ADMIN_ADDRESS = None
 
 
@@ -61,14 +82,16 @@ CONTRACT_ABI = [
 contract = w3.eth.contract(address=CONTRACT_ADDRESS, abi=CONTRACT_ABI)
 
 # ==========================================================
-# 🔒 THE GATEKEEPER (Robust Blacklist System)
+# 🔒 THE GATEKEEPER (SQLite Database System)
 # ==========================================================
-# ==========================================================
-# 🔒 THE GATEKEEPER (Robust Blacklist System)
-# ==========================================================
-# FIX: Use absolute path so the file is ALWAYS found
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-CONFIG_FILE = os.path.join(BASE_DIR, "election_config.json")
+import sqlite3
+
+def get_db_connection():
+    """Returns a connection to the SQLite database."""
+    db_path = os.path.join(BASE_DIR, "election.db")
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    return conn
 
 def get_current_election_id():
     """Reads the current election ID from config."""
@@ -79,65 +102,46 @@ def get_current_election_id():
     except:
         return 1
 
-def get_votes_file_path():
-    """Returns the correct blacklist file for the current election."""
+def has_user_voted(student_id):
+    """Checks the database to see if student has voted in the CURRENT election."""
     eid = get_current_election_id()
-    # PRESERVE BACKWARD COMPATIBILITY: ID 1 uses the original file
-    if eid == 1:
-        return os.path.join(BASE_DIR, "voted_users.json")
-    else:
-        return os.path.join(BASE_DIR, f"voted_users_{eid}.json")
-
-def has_user_voted(user_id):
-    """Checks the JSON file to see if student has voted."""
-    votes_file = get_votes_file_path()
-    print(f"🔍 Checking blacklist in {os.path.basename(votes_file)} for: {user_id}") 
-    
-    if not os.path.exists(votes_file):
-        print("📂 No blacklist file found yet (First vote?).")
-        return False
-        
     try:
-        with open(votes_file, 'r') as f:
-            content = f.read()
-            if not content: return False # Handle empty file
-            voters = json.loads(content)
-            
-            if user_id in voters:
-                print(f"🚫 BLOCKED: Found {user_id} in blacklist!")
-                return True
-            else:
-                print(f"✅ {user_id} is clear to vote.")
-                return False
-    except Exception as e:
-        print(f"⚠️ Error reading blacklist: {e}")
+        conn = get_db_connection()
+        vote = conn.execute(
+            "SELECT id FROM votes WHERE student_id = ? AND election_id = ?",
+            (student_id, eid)
+        ).fetchone()
+        conn.close()
+        
+        if vote:
+            logger.info(f"🚫 BLOCKED: {student_id} already voted in Election #{eid}.")
+            return True
         return False
+    except Exception as e:
+        logger.error(f"⚠️ Database Read Error: {e}")
+        return False # Fail open or closed? Safer to allow retry if DB is down, but risk double vote.
 
-def mark_user_as_voted(user_id):
-    """Adds student ID to the JSON file safely."""
-    votes_file = get_votes_file_path()
-    voters = []
-    
-    # Read existing
-    if os.path.exists(votes_file):
-        try:
-            with open(votes_file, 'r') as f:
-                content = f.read()
-                if content:
-                    voters = json.loads(content)
-        except Exception as e:
-            print(f"⚠️ Error reading for update: {e}")
-            voters = []
-    
-    # Update and Save
-    if user_id not in voters:
-        voters.append(user_id)
-        try:
-            with open(votes_file, 'w') as f:
-                json.dump(voters, f, indent=4) # Indent makes it readable
-            print(f"💾 SAVED: {user_id} added to {votes_file}")
-        except Exception as e:
-            print(f"❌ CRITICAL ERROR: Could not save blacklist! {e}")
+def mark_user_as_voted(student_id):
+    """Records the vote in SQLite with Atomic Transaction."""
+    eid = get_current_election_id()
+    try:
+        conn = get_db_connection()
+        conn.execute(
+            "INSERT INTO votes (student_id, election_id) VALUES (?, ?)",
+            (student_id, eid)
+        )
+        conn.commit()
+        conn.close()
+        conn.commit()
+        conn.close()
+        logger.info(f"💾 SAVED: {student_id} voted in Election #{eid}")
+        return True
+    except sqlite3.IntegrityError:
+        logger.warning(f"❌ DOUBLE VOTE PREVENTED: {student_id} tried to vote twice.")
+        return False
+    except Exception as e:
+        logger.error(f"❌ CRITICAL DATABASE ERROR: {e}")
+        return False
 
 # ==========================================================
 # FIREBASE INITIALIZATION
@@ -148,9 +152,11 @@ if not firebase_admin._apps:
     try:
         cred = credentials.Certificate(KEY_PATH)
         firebase_admin.initialize_app(cred)
-        print("✅ Firebase initialized")
+        cred = credentials.Certificate(KEY_PATH)
+        firebase_admin.initialize_app(cred)
+        logger.info("✅ Firebase initialized")
     except Exception as e:
-        print("❌ Firebase init error:", e)
+        logger.error(f"❌ Firebase init error: {e}")
 
 # ==========================================================
 # CANDIDATES
@@ -184,6 +190,7 @@ def home():
 
 # ---------------- LOGIN ----------------
 @app.route("/login", methods=["GET", "POST"])
+@limiter.limit("10 per minute")
 def login():
     if request.method == "GET":
         return render_template("login.html")
@@ -198,7 +205,9 @@ def login():
         session["student_id"] = decoded["email"].split("@")[0]
         return jsonify({"status": "success", "redirect": "/dashboard"})
     except Exception as e:
-        print("❌ Login error:", e)
+        return jsonify({"status": "success", "redirect": "/dashboard"})
+    except Exception as e:
+        logger.error(f"❌ Login error: {e}")
         return jsonify({"status": "error", "message": "Login failed"}), 500
 
 # ---------------- REGISTER ----------------
@@ -253,6 +262,7 @@ def logout():
 
 # ---------------- ADMIN ----------------
 @app.route("/admin", methods=["GET", "POST"])
+@limiter.limit("5 per minute")
 def admin():
     # 1. GET: Show Admin Login Page
     if request.method == "GET":
@@ -275,39 +285,44 @@ def admin():
         ALLOWED_ADMIN_EMAIL = os.getenv("ALLOWED_ADMIN_EMAIL", "madhurrishis.is24@rvce.edu.in")
         
         if email != ALLOWED_ADMIN_EMAIL:
-            print(f"⚠️ UNAUTHORIZED ADMIN ATTEMPT: {email}")
+            logger.warning(f"⚠️ UNAUTHORIZED ADMIN ATTEMPT: {email}")
             return jsonify({"status": "error", "message": "Access Denied: Not an Admin"}), 403
             
         # ✅ Grant Admin Access
         session["is_admin"] = True
         session["admin_email"] = email
-        print(f"✅ ADMIN LOGGED IN: {email}")
+        logger.info(f"✅ ADMIN LOGGED IN: {email}")
         
         return jsonify({"status": "success", "redirect": "/admin/dashboard"})
 
     except Exception as e:
-        print(f"❌ Admin Login Error: {e}")
+        logger.error(f"❌ Admin Login Error: {e}")
         return jsonify({"status": "error", "message": "Authentication Failed"}), 500
 
 @app.route("/admin/dashboard")
 def admin_dashboard():
     if not session.get("is_admin"): return redirect("/admin")
     
-    # Read Voted Users for Current Election
-    voters = []
-    votes_file = get_votes_file_path() # Dynamic
-    if os.path.exists(votes_file):
-        try:
-            with open(votes_file, 'r') as f:
-                content = f.read()
-                if content: voters = json.loads(content)
-        except: pass
+    # Read Total Voters from Database
+    total_votes = 0
+    eid = get_current_election_id()
+    try:
+        conn = get_db_connection()
+        # Count rows for current election
+        row = conn.execute("SELECT COUNT(*) FROM votes WHERE election_id = ?", (eid,)).fetchone()
+        total_votes = row[0]
+        conn.close()
+    except Exception as e:
+        total_votes = row[0]
+        conn.close()
+    except Exception as e:
+        logger.error(f"⚠️ DB Error in Admin Dashboard: {e}")
     
     return render_template("admin_dashboard.html", 
-                         voters=voters, 
-                         total_votes=len(voters),
+                         voters=[], # No longer passing user list for privacy/performance
+                         total_votes=total_votes,
                          admin_email=session.get("admin_email"),
-                         current_election_id=get_current_election_id())
+                         current_election_id=eid)
 
 # FIX: Absolute path for offsets
 OFFSETS_FILE = os.path.join(BASE_DIR, "election_offsets.json")
@@ -340,7 +355,10 @@ def start_new_election():
              for i in range(1, 7):
                  count = contract.functions.getVotes(i).call()
                  current_votes.append(count)
-             print(f"📸 SNAPSHOT CAPTURED: {current_votes}")
+             for i in range(1, 7):
+                 count = contract.functions.getVotes(i).call()
+                 current_votes.append(count)
+             logger.info(f"📸 SNAPSHOT CAPTURED: {current_votes}")
         except Exception as e:
              return jsonify({"status": "error", "message": f"Blockchain Read Failed: {str(e)}"}), 500
 
@@ -372,11 +390,15 @@ def start_new_election():
         with open(CONFIG_FILE, 'w') as f:
             json.dump(new_config, f, indent=4)
             
-        print(f"🔄 ELECTION CYCLE UPDATED: {current_id} -> {new_id} with Offsets {current_votes}")
+        new_config = {"currentElectionId": new_id}
+        with open(CONFIG_FILE, 'w') as f:
+            json.dump(new_config, f, indent=4)
+            
+        logger.info(f"🔄 ELECTION CYCLE UPDATED: {current_id} -> {new_id} with Offsets {current_votes}")
         return jsonify({"status": "success", "new_election_id": new_id})
         
     except Exception as e:
-        print(f"❌ Error starting new election: {e}")
+        logger.error(f"❌ Error starting new election: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route("/admin/logout")
@@ -398,6 +420,7 @@ def internal_server_error(e):
 # 🚀 NEW SERVER-SIDE VOTING LOGIC (SECURE + ROBUST)
 # ==========================================================
 @app.route("/submit_vote", methods=["POST"])
+@limiter.limit("5 per minute")
 def submit_vote():
     if "user_id" not in session:
         return jsonify({"status": "error", "message": "Unauthorized"}), 401
@@ -419,7 +442,7 @@ def submit_vote():
     
     # Check the file strictly before doing anything else
     if has_user_voted(student_id):
-        print(f"🚫 BLOCKED REQUEST: {student_id} tried to vote again.")
+        logger.warning(f"🚫 BLOCKED REQUEST: {student_id} tried to vote again.")
         return jsonify({"status": "error", "message": "You have already voted!"}), 400
 
     if not ADMIN_PRIVATE_KEY or "PASTE" in ADMIN_PRIVATE_KEY:
@@ -429,11 +452,11 @@ def submit_vote():
     # candidate_id = int(data.get("candidateId")) <-- REMOVED (Moved up)
     
     try:
-        print(f"🗳️  Processing vote for Candidate {candidate_id} by {student_id}...")
+        logger.info(f"🗳️  Processing vote for Candidate {candidate_id} by {student_id}...")
 
         # 1. Create a FRESH temporary wallet
         temp_account = w3.eth.account.create()
-        print(f"👤 Created Temp Voter: {temp_account.address}")
+        logger.info(f"👤 Created Temp Voter: {temp_account.address}")
 
         # 2. Fund the Temp Wallet
         nonce = w3.eth.get_transaction_count(ADMIN_ADDRESS)
@@ -461,7 +484,12 @@ def submit_vote():
         except AttributeError:
              tx_hash_fund = w3.eth.send_raw_transaction(signed_fund_tx.raw_transaction)
 
-        print(f"💸 Funding Temp Wallet... (Tx: {tx_hash_fund.hex()})")
+        except AttributeError:
+             tx_hash_fund = w3.eth.send_raw_transaction(signed_fund_tx.raw_transaction)
+
+        logger.info(f"💸 Funding Temp Wallet... (Tx: {tx_hash_fund.hex()})")
+        
+        # Wait for funding (TIMEOUT 300s)
         
         # Wait for funding (TIMEOUT 300s)
         w3.eth.wait_for_transaction_receipt(tx_hash_fund, timeout=300)
@@ -485,13 +513,12 @@ def submit_vote():
         
         signed_vote_tx = w3.eth.account.sign_transaction(built_vote_tx, temp_account.key)
         
-        # FIX: Try camelCase, if fail try snake_case
         try:
             tx_hash_vote = w3.eth.send_raw_transaction(signed_vote_tx.rawTransaction)
         except AttributeError:
             tx_hash_vote = w3.eth.send_raw_transaction(signed_vote_tx.raw_transaction)
         
-        print(f"✅ Vote Cast on Blockchain! Hash: {tx_hash_vote.hex()}")
+        logger.info(f"✅ Vote Cast on Blockchain! Hash: {tx_hash_vote.hex()}")
 
         # Wait for vote receipt (TIMEOUT 300s)
         receipt = w3.eth.wait_for_transaction_receipt(tx_hash_vote, timeout=300)
@@ -499,7 +526,7 @@ def submit_vote():
         if receipt.status == 1:
             # ✅ SUCCESS! MARK USER AS VOTED IMMEDIATELY
             mark_user_as_voted(student_id)
-            print(f"📝 {student_id} added to blacklist.")
+            logger.info(f"📝 {student_id} added to blacklist.")
             # Ensure hash has 0x prefix for Etherscan compatibility
             tx_hash_str = tx_hash_vote.hex() if isinstance(tx_hash_vote.hex(), str) else str(tx_hash_vote.hex())
             if not tx_hash_str.startswith('0x'):
@@ -508,9 +535,14 @@ def submit_vote():
         else:
             return jsonify({"status": "error", "message": "Transaction reverted on chain"}), 500
 
+            return jsonify({"status": "error", "message": "Transaction reverted on chain"}), 500
+
     except Exception as e:
-        print("❌ Blockchain Error:", e)
+        logger.error(f"❌ Blockchain Error: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
 if __name__ == "__main__":
+    # Initialize DB on start
+    from database_init import init_db
+    init_db()
     app.run()
