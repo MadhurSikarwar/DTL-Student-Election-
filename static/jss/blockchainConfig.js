@@ -1,7 +1,8 @@
 // ===============================
 // CONTRACT ADDRESS (SEPOLIA)
 // ===============================
-window.CONTRACT_ADDRESS = "0x585a1801372e73BabAf4144D306bAF80A7496ae9";
+// Use injected address from backend if available, else fallback (fallback should ideally be avoided)
+window.CONTRACT_ADDRESS = window.CONTRACT_ADDRESS || "0xa98820b2572F5c963192c4065995ba88EBbaf4B9";
 
 // ===============================
 // CONTRACT ABI

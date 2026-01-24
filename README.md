@@ -15,6 +15,23 @@
 
 ---
 
+## 🚀 Quick Start
+**Use the all-in-one script to reset and launch the app:**
+```bash
+python reset_and_run.py
+```
+This script will:
+1.  Clean up old database files.
+2.  Reset election configuration.
+3.  Start the Flask server at `http://127.0.0.1:5000`.
+
+**To deploy a new smart contract:**
+```bash
+python deploy.py
+```
+(Be sure to restart the app after deployment!)
+---
+
 ## Project Summary
 The **DTL Student Election** application is a Flask‑based web platform that enables students to securely vote for class representatives. It leverages **Firebase Authentication** for user identity and **Ethereum Sepolia testnet** (via Web3) to record votes on‑chain, ensuring immutability and transparency. Admins can create new election cycles, view results, and manage the voting process.
 
@@ -99,22 +116,23 @@ ALLOWED_ADMIN_EMAIL=madhurrishis.is24@rvce.edu.in
 ```
 DTL FINAL PROTOTYPE/
 ├─ app.py                 # Flask entry point
+├─ deploy.py              # Smart Contract Deployment
+├─ reset_and_run.py       # Helper to reset DB & start app
 ├─ requirements.txt       # Python deps
 ├─ .env (ignored)        # Env vars
 ├─ firebase_credentials.json
 ├─ election_config.json   # {"currentElectionId": N}
 ├─ election_offsets.json  # {"N": [votes per candidate]}
-├─ voted_users.json       # Blacklist for election 1
-├─ voted_users_2.json ... # Blacklist per election
+├─ election.db            # SQLite Database (Auto-created)
 ├─ static/                # CSS, images, JS
 ├─ templates/            # HTML/Jinja2 files
 │   ├─ dashboard.html
 │   ├─ login.html
 │   ├─ vote.html
 │   ├─ results.html
-│   ├─ manifesto_candidateX.html
+│   ├─ manifesto.html
 │   └─ ...
-└─ README.md (original)
+└─ README.md
 ```
 
 ---

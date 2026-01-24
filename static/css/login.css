@@ -387,3 +387,220 @@ input::placeholder {
         padding: 2rem;
     }
 }
+
+/* --- EXTRACTION FROM INLINE STYLES --- */
+
+/* Forgot Password & Admin Actions Container */
+.action-buttons-container {
+    margin-top: 2rem;
+    text-align: center;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+#forgotPasswordBtn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+#forgotPasswordBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+#forgotPasswordBtn:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.admin-link-btn {
+    background: linear-gradient(135deg, #ff0033 0%, #cc0029 100%);
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-block;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 15px rgba(255, 0, 51, 0.4);
+}
+
+.admin-link-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 0, 51, 0.5);
+}
+
+.admin-link-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 15px rgba(255, 0, 51, 0.4);
+}
+
+/* Modal Styles */
+#forgotPasswordModal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+    background: var(--card-bg);
+    padding: 2.5rem;
+    border-radius: 16px;
+    max-width: 450px;
+    width: 90%;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    animation: slideUp 0.3s ease;
+}
+
+.modal-icon-wrapper {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.modal-icon-circle {
+    display: inline-block;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+.modal-title {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+    text-align: center;
+    font-size: 1.5rem;
+}
+
+.modal-desc {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    line-height: 1.5;
+}
+
+.modal-input-group {
+    margin-bottom: 1.5rem;
+}
+
+.modal-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+#resetEmail {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--input-bg);
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+
+#resetEmail:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    outline: none;
+}
+
+#resetMsg {
+    display: none;
+    padding: 0.8rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+#sendResetBtn {
+    flex: 1;
+    padding: 1rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+#sendResetBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+#cancelResetBtn {
+    flex: 1;
+    padding: 1rem;
+    background: transparent;
+    color: var(--text-secondary);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#cancelResetBtn:hover {
+    border-color: var(--text-primary);
+    color: var(--text-primary);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}

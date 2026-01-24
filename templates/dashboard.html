@@ -92,35 +92,11 @@
 
     <footer style="text-align: center; padding: 2rem;">
         <a href="/admin" class="admin-portal-btn">Admin Portal</a>
-        <style>
-            .admin-portal-btn {
-                background: #ff0033;
-                color: white;
-                padding: 0.8rem 2rem;
-                border-radius: 50px;
-                text-decoration: none;
-                font-weight: 600;
-                font-size: 0.9rem;
-                display: inline-block;
-                transition: all 0.3s ease;
-                box-shadow: 0 4px 12px rgba(255, 0, 51, 0.4);
-                margin-top: 10px;
-            }
 
-            .admin-portal-btn:hover {
-                background: #cc0029;
-                transform: translateY(-2px);
-                box-shadow: 0 6px 16px rgba(255, 0, 51, 0.6);
-            }
-        </style>
     </footer>
 
     <!-- Scripts -->
-    <script>
-        // Use a high-quality election themed background
-        const bgImage = "https://images.unsplash.com/photo-1540910419868-474947cebacb?q=80&w=2072&auto=format&fit=crop";
-        document.getElementById("welcomeCard").style.backgroundImage = `url('${bgImage}')`;
-    </script>
+    <script src="{{ url_for('static', filename='jss/dashboard.js') }}"></script>
     <script src="{{ url_for('static', filename='jss/theme.js') }}"></script>
     <script src="{{ url_for('static', filename='jss/cursor.js') }}"></script>
     <script src="{{ url_for('static', filename='jss/background-particles.js') }}"></script>

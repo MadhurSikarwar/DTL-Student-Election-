@@ -9,194 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
     <!-- Optional for icons -->
-    <style>
-        body {
-            background: var(--bg-body);
-            color: var(--text-main);
-            font-family: var(--font-main);
-            padding: 0;
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .admin-nav {
-            background: var(--bg-surface);
-            border-bottom: 1px solid var(--border-color);
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .admin-brand {
-            font-weight: 800;
-            font-size: 1.5rem;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .badge {
-            background: var(--accent-red);
-            color: white;
-            font-size: 0.7rem;
-            padding: 2px 6px;
-            border-radius: 4px;
-            text-transform: uppercase;
-        }
-
-        .admin-user {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .user-pill {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 0.5rem 1rem;
-            border-radius: 2rem;
-            border: 1px solid var(--border-color);
-            font-size: 0.9rem;
-        }
-
-        .logout-btn {
-            background: var(--bg-surface);
-            color: var(--accent-red);
-            text-decoration: none;
-            padding: 0.5rem 1.2rem;
-            border-radius: var(--radius-sm);
-            border: 1px solid var(--accent-red);
-            transition: all 0.2s;
-            font-weight: 600;
-        }
-
-        .logout-btn:hover {
-            background: var(--accent-red);
-            color: white;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 3rem auto;
-            padding: 0 2rem;
-            flex: 1;
-            width: 90%;
-        }
-
-        .grid-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
-
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-        }
-
-        .card {
-            background: var(--bg-surface);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            padding: 2rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: var(--primary);
-        }
-
-        .card h3 {
-            margin-top: 0;
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .card .value {
-            font-size: 3rem;
-            font-weight: 700;
-            margin: 0.5rem 0;
-            background: linear-gradient(135deg, #fff 0%, #aaa 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .status-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 600;
-            color: #10b981;
-            background: rgba(16, 185, 129, 0.1);
-            padding: 0.5rem 1rem;
-            border-radius: 2rem;
-        }
-
-        .dot {
-            width: 8px;
-            height: 8px;
-            background: #10b981;
-            border-radius: 50%;
-            box-shadow: 0 0 8px #10b981;
-        }
-
-        .action-area {
-            margin-top: 3rem;
-            padding: 2rem;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px dashed var(--border-color);
-            border-radius: var(--radius-lg);
-        }
-
-        .btn-disabled {
-            background: #333;
-            color: #666;
-            padding: 1rem 2rem;
-            border-radius: var(--radius-md);
-            border: none;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: not-allowed;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .voter-log {
-            margin-top: 3rem;
-        }
-
-        .voter-log table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .voter-log th,
-        .voter-log td {
-            text-align: left;
-            padding: 1rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .voter-log th {
-            color: var(--text-muted);
-            font-weight: 400;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_dashboard.css') }}">
 </head>
 
 <body>
@@ -210,6 +23,10 @@
             <div class="user-pill">
                 👤 {{ admin_email }}
             </div>
+            <button id="themeToggleBtn" class="theme-btn" onclick="toggleTheme()" aria-label="Toggle Dark/Light Mode"
+                style="margin-right: 1rem;">
+                <span class="theme-icon">🌙</span>
+            </button>
             <a href="/admin/logout" class="logout-btn">Log Out</a>
         </div>
     </nav>
@@ -231,29 +48,156 @@
             </div>
 
             <!-- Total Votes -->
-            <div class="card" style="border-left-color: var(--accent-blue);">
-                <style>
-                    .card:nth-child(2)::before {
-                        background: var(--accent-blue);
-                    }
-                </style>
+            <div class="card">
                 <h3>Total Votes Cast</h3>
                 <div class="value">{{ total_votes }}</div>
                 <p style="color: var(--text-muted); font-size: 0.85rem;">Valid Blockchain Transactions</p>
             </div>
         </div>
 
-        <!-- ACTION ZONE -->
-        <div class="action-area">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <h3 style="margin: 0; color: var(--text-highlight);">End Current Election & Start New</h3>
-                    <p style="color: var(--text-muted); margin: 0.5rem 0 0 0;">This will archive current votes and reset
-                        the voting status for all students.</p>
+        <!-- MANAGED CANDIDATES ZONE -->
+        <div class="action-area area-primary">
+            <div class="grid-header" style="margin-bottom: 1rem;">
+                <h3 class="section-header-primary">📋 Manage Candidates</h3>
+            </div>
+
+            <!-- Add Candidate Form -->
+            <form id="addCandidateForm" class="add-candidate-form">
+                <div class="col-span-full">
+                    <h4 class="form-title">Add New Candidate</h4>
                 </div>
 
-                <button id="newElectionBtn" class="btn-primary" onclick="confirmNewElection()"
-                    style="background: var(--accent-red); color: white; padding: 1rem 2rem; border-radius: var(--radius-md); border: none; font-size: 1rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; transition: transform 0.2s;">
+                <input type="text" name="name" placeholder="Candidate Name" required class="admin-input">
+
+                <input type="text" name="position" placeholder="Position (e.g. Class Rep)" required class="admin-input">
+
+                <div class="col-span-full"
+                    style="display: flex; gap: 1rem; align-items: center; margin-bottom: 0.5rem;">
+                    <span class="label-muted">Manifesto Type:</span>
+                    <label
+                        style="color: var(--text-main); cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                        <input type="radio" name="manifestoType" value="text" checked
+                            onclick="toggleManifestoInput('text')"> Write Text
+                    </label>
+                    <label
+                        style="color: var(--text-main); cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                        <input type="radio" name="manifestoType" value="file" onclick="toggleManifestoInput('file')">
+                        Upload Document
+                    </label>
+                </div>
+
+                <div id="manifestoTextInput" class="col-span-full">
+                    <textarea name="manifesto" id="manifestoText" placeholder="Write Candidate Manifesto / Slogan..."
+                        required class="admin-input" style="min-height: 80px; font-family: inherit;"></textarea>
+                </div>
+
+                <div id="manifestoFileInput" class="photo-upload-group col-span-full" style="display: none;">
+                    <label class="label-muted">📄 Document (PDF/DOC):</label>
+                    <input type="file" name="manifesto_file" id="manifestoFile" accept=".pdf,.doc,.docx,.txt"
+                        class="label-muted">
+                </div>
+
+                <div class="photo-upload-group">
+                    <label class="label-muted">Photo:</label>
+                    <input type="file" name="image" accept="image/*" class="label-muted">
+                    <button type="submit" class="btn-add">
+                        + Add Candidate
+                    </button>
+                </div>
+            </form>
+
+            <!-- Candidate List -->
+            <div class="table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr class="thead-bg">
+                            <th class="th-pad">ID</th>
+                            <th class="th-pad">Photo</th>
+                            <th class="th-pad">Name</th>
+                            <th class="th-pad">Position</th>
+                            <th class="th-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cand in candidates %}
+                        <tr class="row-border">
+                            <td class="td-muted">#{{ cand.id }}</td>
+                            <td class="td-pad">
+                                <img src="{{ url_for('static', filename='images/' + cand.image) }}" alt="img"
+                                    class="cand-thumb">
+                            </td>
+                            <td class="td-bold">{{ cand.name }}</td>
+                            <td class="td-blue">{{ cand.position }}</td>
+                            <td class="td-right">
+                                <button onclick="deleteCandidate('{{ cand.id }}')" class="btn-delete">
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="no-cand-msg">No active candidates found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ELECTION CONTROL ZONE -->
+        <div class="action-area area-blue">
+            <div class="grid-header" style="margin-bottom: 1rem;">
+                <h3 class="section-header-blue">⚡ Election Control</h3>
+            </div>
+
+            <div class="control-grid">
+                <!-- Pause/Resume Section -->
+                <div class="control-panel">
+                    <h4 class="form-title">Pause/Resume Voting</h4>
+                    <p class="control-desc">Instantly freeze or unfreeze voting</p>
+
+                    <div id="pauseStatusDisplay" class="status-box-active">
+                        ▶️ Voting is ACTIVE
+                    </div>
+
+                    <div class="control-btn-group">
+                        <button id="pauseBtn" onclick="pauseElection()" class="btn-pause">
+                            ⏸️ Pause
+                        </button>
+                        <button id="resumeBtn" onclick="resumeElection()" class="btn-resume">
+                            ▶️ Resume
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Deadline Section -->
+                <div class="control-panel">
+                    <h4 class="form-title">Set Election Deadline</h4>
+                    <p class="control-desc">Voting will automatically stop at this time</p>
+
+                    <div id="deadlineDisplay" class="deadline-display">
+                        No deadline set
+                    </div>
+
+                    <input type="datetime-local" id="deadlineInput" class="input-deadline">
+
+                    <button onclick="setDeadline()" class="btn-set-deadline">
+                        ⏰ Set Deadline
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ACTION ZONE -->
+        <div class="action-area">
+            <div class="reset-zone">
+                <div>
+                    <h3 class="text-highlight">End Current Election & Start New</h3>
+                    <p class="reset-desc">This will archive current votes and reset the voting status for all students.
+                    </p>
+                </div>
+
+                <button id="newElectionBtn" class="btn-reset" onclick="confirmNewElection()">
                     <span>⚠️ Start New Election</span>
                 </button>
             </div>
@@ -262,11 +206,10 @@
         <!-- VOTER LOG -->
         <div class="voter-log">
             <h3>Recent Activity Log</h3>
-            <div
-                style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); overflow: hidden;">
+            <div class="table-container">
                 <table>
                     <thead>
-                        <tr style="background: rgba(255,255,255,0.02);">
+                        <tr class="thead-subtle">
                             <th>Student ID</th>
                             <th>Status</th>
                             <th>Timestamp</th>
@@ -276,15 +219,14 @@
                         {% if voters %}
                         {% for student in voters[-10:]|reverse %}
                         <tr>
-                            <td style="font-family: monospace; color: var(--accent-blue);">{{ student }}</td>
-                            <td><span style="color: #10b981; font-weight: bold;">✔ Voted</span></td>
-                            <td style="color: var(--text-muted);">Just now</td>
+                            <td class="td-mono-blue">{{ student }}</td>
+                            <td><span class="status-voted">✔ Voted</span></td>
+                            <td class="label-muted">Just now</td>
                         </tr>
                         {% endfor %}
                         {% else %}
                         <tr>
-                            <td colspan="3" style="text-align: center; padding: 3rem; color: var(--text-muted);">No
-                                votes recorded yet.</td>
+                            <td colspan="3" class="no-votes-msg">No votes recorded yet.</td>
                         </tr>
                         {% endif %}
                     </tbody>
@@ -294,39 +236,8 @@
 
     </div>
 
-    <script>
-        async function confirmNewElection() {
-            if (!confirm("⚠️ CRITICAL ACTION ⚠️\n\nAre you sure you want to END the current election and START A NEW one?\n\n- This will archive the current vote list.\n- All students will be allowed to vote again in the new cycle.\n- This action cannot be undone.")) {
-                return;
-            }
-
-            const btn = document.getElementById("newElectionBtn");
-            btn.disabled = true;
-            btn.textContent = "Processing...";
-
-            try {
-                const response = await fetch('/admin/start-new-election', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-
-                const data = await response.json();
-
-                if (data.status === 'success') {
-                    alert("✅ Success! New Election Cycle Started.");
-                    window.location.reload();
-                } else {
-                    alert("Error: " + data.message);
-                    btn.disabled = false;
-                    btn.textContent = "⚠️ Start New Election";
-                }
-            } catch (e) {
-                alert("Request Failed: " + e);
-                btn.disabled = false;
-                btn.textContent = "⚠️ Start New Election";
-            }
-        }
-    </script>
+    <script src="{{ url_for('static', filename='jss/admin_dashboard.js') }}"></script>
+    <script src="{{ url_for('static', filename='jss/theme.js') }}"></script>
     <script src="{{ url_for('static', filename='jss/background-particles.js') }}"></script>
 </body>
 

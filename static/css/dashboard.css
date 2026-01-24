@@ -84,6 +84,7 @@ body::after {
     letter-spacing: -0.5px;
     background: var(--primary-gradient);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
@@ -225,6 +226,7 @@ body::after {
 .welcome-card .highlight {
     background: var(--primary-gradient);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
@@ -390,4 +392,25 @@ body::after {
     .welcome-card h2 {
         font-size: 2rem;
     }
+}
+
+/* Admin Portal Button */
+.admin-portal-btn {
+    background: #ff0033;
+    color: white;
+    padding: 0.8rem 2rem;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: inline-block;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(255, 0, 51, 0.4);
+    margin-top: 10px;
+}
+
+.admin-portal-btn:hover {
+    background: #cc0029;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(255, 0, 51, 0.6);
 }

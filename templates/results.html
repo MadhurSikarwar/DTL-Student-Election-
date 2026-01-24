@@ -59,130 +59,53 @@
                 <div class="overlay"></div>
             </div>
 
+            <!-- ===== CHART SECTION ===== -->
+            <div class="chart-container"
+                style="margin-bottom: 2rem; background: var(--bg-surface); padding: 1.5rem; border-radius: 16px; border: 1px solid var(--border-color);">
+                <canvas id="voteChart" height="100"></canvas>
+            </div>
+
             <!-- ================= RESULTS GRID ================= -->
             <div class="results-grid">
-
-                <!-- Candidate 1 -->
-                <div class="result-card" id="card1">
-                    <div class="rank-badge">#1</div>
+                {% for cand in candidates %}
+                <div class="result-card" id="card{{ cand.id }}" data-id="{{ cand.id }}">
+                    <div class="rank-badge">#{{ loop.index }}</div>
                     <div class="img-wrapper">
-                        <img src="{{ url_for('static', filename='images/cand1.jpg') }}" class="cand-img">
+                        <img src="{{ url_for('static', filename='images/' + cand.image) }}" class="cand-img"
+                            onerror="this.src='https://via.placeholder.com/150'">
                     </div>
                     <div class="info">
-                        <h3>Candidate One</h3>
-                        <p class="position">Class Rep</p>
+                        <h3>{{ cand.name }}</h3>
+                        <p class="position">{{ cand.position }}</p>
                     </div>
                     <div class="vote-count">
-                        <span id="v1" class="count">0</span>
+                        <span id="v{{ cand.id }}" class="count">0</span>
                         <span class="label">Votes</span>
                     </div>
                     <div class="progress-bar">
                         <div class="fill"></div>
                     </div>
                 </div>
-
-                <!-- Candidate 2 -->
-                <div class="result-card" id="card2">
-                    <div class="rank-badge">#2</div>
-                    <div class="img-wrapper">
-                        <img src="{{ url_for('static', filename='images/cand2.jpg') }}" class="cand-img">
-                    </div>
-                    <div class="info">
-                        <h3>Candidate Two</h3>
-                        <p class="position">Class Rep</p>
-                    </div>
-                    <div class="vote-count">
-                        <span id="v2" class="count">0</span>
-                        <span class="label">Votes</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="fill"></div>
-                    </div>
-                </div>
-
-                <!-- Candidate 3 -->
-                <div class="result-card" id="card3">
-                    <div class="rank-badge">#3</div>
-                    <div class="img-wrapper">
-                        <img src="{{ url_for('static', filename='images/cand3.jpg') }}" class="cand-img">
-                    </div>
-                    <div class="info">
-                        <h3>Candidate Three</h3>
-                        <p class="position">Class Rep</p>
-                    </div>
-                    <div class="vote-count">
-                        <span id="v3" class="count">0</span>
-                        <span class="label">Votes</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="fill"></div>
-                    </div>
-                </div>
-
-                <!-- Candidate 4 -->
-                <div class="result-card" id="card4">
-                    <div class="rank-badge">#4</div>
-                    <div class="img-wrapper">
-                        <img src="{{ url_for('static', filename='images/cand4.jpg') }}" class="cand-img">
-                    </div>
-                    <div class="info">
-                        <h3>Candidate Four</h3>
-                        <p class="position">Class Rep</p>
-                    </div>
-                    <div class="vote-count">
-                        <span id="v4" class="count">0</span>
-                        <span class="label">Votes</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="fill"></div>
-                    </div>
-                </div>
-
-                <!-- Candidate 5 -->
-                <div class="result-card" id="card5">
-                    <div class="rank-badge">#5</div>
-                    <div class="img-wrapper">
-                        <img src="{{ url_for('static', filename='images/cand5.jpg') }}" class="cand-img">
-                    </div>
-                    <div class="info">
-                        <h3>Candidate Five</h3>
-                        <p class="position">Class Rep</p>
-                    </div>
-                    <div class="vote-count">
-                        <span id="v5" class="count">0</span>
-                        <span class="label">Votes</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="fill"></div>
-                    </div>
-                </div>
-
-                <!-- Candidate 6 -->
-                <div class="result-card" id="card6">
-                    <div class="rank-badge">#6</div>
-                    <div class="img-wrapper">
-                        <img src="{{ url_for('static', filename='images/cand6.jpg') }}" class="cand-img">
-                    </div>
-                    <div class="info">
-                        <h3>Candidate Six</h3>
-                        <p class="position">Class Rep</p>
-                    </div>
-                    <div class="vote-count">
-                        <span id="v6" class="count">0</span>
-                        <span class="label">Votes</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="fill"></div>
-                    </div>
-                </div>
-
+                {% endfor %}
             </div>
         </div>
     </div>
 
     <!-- ================= SCRIPTS ================= -->
+    <!-- Chart.js via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="{{ url_for('static', filename='vendor/ethers.umd.min.js') }}"></script>
 
+    <!-- Pass Python Candidates to JS -->
+    <!-- Pass Python Candidates to JS -->
+    <script id="candidates-data" type="application/json">
+        {{ candidates | tojson | safe }}
+    </script>
+    <script>
+        window.ALL_CANDIDATES = JSON.parse(document.getElementById('candidates-data').textContent);
+        // 💉 INJECTED FROM BACKEND
+        window.CONTRACT_ADDRESS = "{{ CONTRACT_ADDRESS }}"; 
+    </script>
 
     <script src="{{ url_for('static', filename='jss/blockchainConfig.js') }}"></script>
     <script src="{{ url_for('static', filename='jss/results.js') }}"></script>
@@ -191,15 +114,7 @@
     <script src="{{ url_for('static', filename='jss/background-particles.js') }}"></script>
 
     <!-- ================= WINNER BACKGROUND SCRIPT ================= -->
-    <script>
-        // Use local premium background
-        const imageUrl = "{{ url_for('static', filename='images/winner-bg-premium.png') }}";
 
-        const box = document.getElementById("winnerBox");
-        if (box) {
-            box.style.backgroundImage = `url('${imageUrl}')`;
-        }
-    </script>
 
 </body>
 

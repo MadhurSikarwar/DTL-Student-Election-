@@ -1,7 +1,9 @@
 import os
 import json
 import time
+import time
 import logging
+import threading
 from flask import Flask, render_template, request, redirect, session, jsonify, make_response
 import firebase_admin
 from firebase_admin import credentials, auth
@@ -52,11 +54,14 @@ ADMIN_PRIVATE_KEY = os.getenv("ADMIN_PRIVATE_KEY")
 
 try:
     ADMIN_ADDRESS = w3.eth.account.from_key(ADMIN_PRIVATE_KEY).address
-    ADMIN_ADDRESS = w3.eth.account.from_key(ADMIN_PRIVATE_KEY).address
     logger.info(f"✅ Admin Wallet Loaded: {ADMIN_ADDRESS}")
 except Exception as e:
     logger.warning("⚠️ WARNING: Private Key not set correctly yet.")
+    logger.warning("⚠️ WARNING: Private Key not set correctly yet.")
     ADMIN_ADDRESS = None
+
+# 🔒 MUTEX LOCK for Admin Nonce (Prevents race conditions)
+NONCE_LOCK = threading.Lock()
 
 
 # 3. Your Contract Details (Loaded from .env file)
@@ -86,6 +91,20 @@ CONTRACT_ABI = [
 ]
 
 contract = w3.eth.contract(address=CONTRACT_ADDRESS, abi=CONTRACT_ABI)
+
+# ==========================================================
+# 🔥 FIREBASE ADMIN INITIALIZATION
+# ==========================================================
+firebase_cred_path = os.path.join(BASE_DIR, "firebase_credentials.json")
+if os.path.exists(firebase_cred_path):
+    try:
+        cred = credentials.Certificate(firebase_cred_path)
+        firebase_admin.initialize_app(cred)
+        logger.info("✅ Firebase Admin SDK initialized successfully")
+    except Exception as e:
+        logger.warning(f"⚠️ Firebase initialization failed: {e}")
+else:
+    logger.warning(f"⚠️ Firebase credentials not found at {firebase_cred_path}")
 
 # ==========================================================
 # 🔒 THE GATEKEEPER (SQLite Database System)
@@ -149,32 +168,155 @@ def mark_user_as_voted(student_id):
         logger.error(f"❌ CRITICAL DATABASE ERROR: {e}")
         return False
 
-# ==========================================================
-# FIREBASE INITIALIZATION
-# ==========================================================
-KEY_PATH = os.path.join(BASE_DIR, os.getenv("FIREBASE_CREDENTIALS_PATH", "firebase_credentials.json"))
-
-if not firebase_admin._apps:
+def unmark_user_as_voted(student_id):
+    """ROLLBACK: Removes the vote record if blockchain tx fails."""
+    eid = get_current_election_id()
     try:
-        cred = credentials.Certificate(KEY_PATH)
-        firebase_admin.initialize_app(cred)
-        cred = credentials.Certificate(KEY_PATH)
-        firebase_admin.initialize_app(cred)
-        logger.info("✅ Firebase initialized")
+        conn = get_db_connection()
+        conn.execute(
+            "DELETE FROM votes WHERE student_id = ? AND election_id = ?",
+            (student_id, eid)
+        )
+        conn.commit()
+        conn.close()
+        logger.info(f"↩️ ROLLBACK: Unmarked {student_id} (TX Failed)")
+        return True
     except Exception as e:
-        logger.error(f"❌ Firebase init error: {e}")
+        logger.error(f"❌ ROLLBACK FAILED for {student_id}: {e}")
+        return False
 
 # ==========================================================
-# CANDIDATES
+# 📋 CANDIDATE MANAGEMENT (DB)
 # ==========================================================
-CANDIDATES = [
-    {"id": 1, "name": "Candidate One", "position": "Class Rep", "image": "cand1.jpg"},
-    {"id": 2, "name": "Candidate Two", "position": "Class Rep", "image": "cand2.jpg"},
-    {"id": 3, "name": "Candidate Three", "position": "Class Rep", "image": "cand3.jpg"},
-    {"id": 4, "name": "Candidate Four", "position": "Class Rep", "image": "cand4.jpg"},
-    {"id": 5, "name": "Candidate Five", "position": "Class Rep", "image": "cand5.jpg"},
-    {"id": 6, "name": "Candidate Six", "position": "Class Rep", "image": "cand6.jpg"}
-]
+def get_all_candidates():
+    """Fetches all candidates from the database."""
+    try:
+        conn = get_db_connection()
+        candidates = conn.execute("SELECT * FROM candidates WHERE active = 1").fetchall()
+        conn.close()
+        return [dict(cand) for cand in candidates]
+    except Exception as e:
+        logger.error(f"⚠️ DB Read Error (Candidates): {e}")
+        return []
+
+def get_candidate_by_id(cid):
+    """Fetches a single candidate by ID."""
+    try:
+        conn = get_db_connection()
+        candidate = conn.execute("SELECT * FROM candidates WHERE id = ?", (cid,)).fetchone()
+        conn.close()
+        return dict(candidate) if candidate else None
+    except Exception as e:
+        logger.error(f"⚠️ DB Read Error (One Candidate): {e}")
+        return None
+
+def add_candidate(name, position, image, manifesto):
+    """Adds a new candidate to the database."""
+    try:
+        conn = get_db_connection()
+        conn.execute(
+            "INSERT INTO candidates (name, position, image, manifesto) VALUES (?, ?, ?, ?)",
+            (name, position, image, manifesto)
+        )
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e:
+        logger.error(f"❌ Error Adding Candidate: {e}")
+        return False
+
+def delete_candidate(cid):
+    """Soft deletes a candidate (sets active=0)."""
+    try:
+        conn = get_db_connection()
+        conn.execute("UPDATE candidates SET active = 0 WHERE id = ?", (cid,))
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e:
+        logger.error(f"❌ Error Deleting Candidate: {e}")
+        return False
+
+# ==========================================================
+# ⏰ ELECTION CONTROL (Pause/Resume & Deadline)
+# ==========================================================
+from datetime import datetime
+
+def get_election_settings(election_id):
+    """Fetches settings for a specific election."""
+    try:
+        conn = get_db_connection()
+        settings = conn.execute(
+            "SELECT * FROM election_settings WHERE election_id = ?", 
+            (election_id,)
+        ).fetchone()
+        conn.close()
+        return dict(settings) if settings else None
+    except Exception as e:
+        logger.error(f"⚠️ Error fetching election settings: {e}")
+        return None
+
+def update_pause_status(election_id, is_paused):
+    """Update pause status for an election."""
+    try:
+        conn = get_db_connection()
+        conn.execute(
+            "UPDATE election_settings SET is_paused = ? WHERE election_id = ?",
+            (1 if is_paused else 0, election_id)
+        )
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e:
+        logger.error(f"❌ Error updating pause status: {e}")
+        return False
+
+def set_election_deadline(election_id, deadline_str):
+    """Set deadline for an election. deadline_str should be in ISO format."""
+    try:
+        conn = get_db_connection()
+        conn.execute(
+            "UPDATE election_settings SET deadline = ? WHERE election_id = ?",
+            (deadline_str, election_id)
+        )
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e:
+        logger.error(f"❌ Error setting deadline: {e}")
+        return False
+
+def is_voting_allowed():
+    """Check if voting is currently allowed (not paused & before deadline)."""
+    eid = get_current_election_id()
+    settings = get_election_settings(eid)
+    
+    if not settings:
+        # If no settings exist, create default and allow voting
+        try:
+            conn = get_db_connection()
+            conn.execute("INSERT OR IGNORE INTO election_settings (election_id, is_paused) VALUES (?, 0)", (eid,))
+            conn.commit()
+            conn.close()
+        except:
+            pass
+        return True, "Voting is open"
+    
+    # Check if paused
+    if settings.get('is_paused'):
+        return False, "⏸️ Voting is currently paused by admin"
+    
+    # Check deadline
+    deadline = settings.get('deadline')
+    if deadline:
+        try:
+            deadline_dt = datetime.fromisoformat(deadline)
+            if datetime.now() > deadline_dt:
+                return False, f"⏰ Voting ended at {deadline_dt.strftime('%Y-%m-%d %H:%M')}"
+        except:
+            pass
+    
+    return True, "Voting is open"
 
 # ==========================================================
 # ROUTES
@@ -186,9 +328,15 @@ def add_security_headers(response):
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['X-Frame-Options'] = 'SAMEORIGIN'
     response.headers['X-XSS-Protection'] = '1; mode=block'
-    # Strict-Transport-Security (Enable if using HTTPS in prod)
     # response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
     return response
+
+# 💉 CONTEXT PROCESSOR: Inject Contract Address into ALL templates
+@app.context_processor
+def inject_contract_config():
+    return {
+        "CONTRACT_ADDRESS": CONTRACT_ADDRESS
+    }
 
 @app.route("/")
 def home():
@@ -209,8 +357,6 @@ def login():
         session["user_id"] = decoded["uid"]
         session["email"] = decoded["email"]
         session["student_id"] = decoded["email"].split("@")[0]
-        return jsonify({"status": "success", "redirect": "/dashboard"})
-    except Exception as e:
         return jsonify({"status": "success", "redirect": "/dashboard"})
     except Exception as e:
         logger.error(f"❌ Login error: {e}")
@@ -240,13 +386,15 @@ def architecture():
 @app.route("/vote")
 def vote():
     if "user_id" not in session: return redirect("/login")
-    return render_template("vote.html", candidates=CANDIDATES)
+    candidates = get_all_candidates()
+    return render_template("vote.html", candidates=candidates)
 
 # ---------------- RESULTS ----------------
 @app.route("/results")
 def results():
     if "user_id" not in session: return redirect("/login")
-    resp = make_response(render_template("results.html"))
+    candidates = get_all_candidates()
+    resp = make_response(render_template("results.html", candidates=candidates))
     resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
     return resp
 
@@ -254,10 +402,13 @@ def results():
 @app.route("/manifesto/<int:candidate_id>")
 def manifesto(candidate_id):
     if "user_id" not in session: return redirect("/login")
-    # Validate candidate ID
-    if candidate_id < 1 or candidate_id > 6:
+    
+    # Validate candidate ID via DB
+    candidate = get_candidate_by_id(candidate_id)
+    if not candidate:
         return redirect("/vote")
-    return render_template(f"manifesto_candidate{candidate_id}.html")
+    
+    return render_template(f"manifesto.html", candidate=candidate)
 
 
 # ---------------- LOGOUT ----------------
@@ -309,26 +460,123 @@ def admin():
 def admin_dashboard():
     if not session.get("is_admin"): return redirect("/admin")
     
-    # Read Total Voters from Database
+    # Read Total Voters
     total_votes = 0
     eid = get_current_election_id()
+    candidates = get_all_candidates()
+
     try:
         conn = get_db_connection()
-        # Count rows for current election
         row = conn.execute("SELECT COUNT(*) FROM votes WHERE election_id = ?", (eid,)).fetchone()
-        total_votes = row[0]
-        conn.close()
-    except Exception as e:
         total_votes = row[0]
         conn.close()
     except Exception as e:
         logger.error(f"⚠️ DB Error in Admin Dashboard: {e}")
     
     return render_template("admin_dashboard.html", 
-                         voters=[], # No longer passing user list for privacy/performance
                          total_votes=total_votes,
                          admin_email=session.get("admin_email"),
-                         current_election_id=eid)
+                         current_election_id=eid,
+                         candidates=candidates)
+
+# ---------------- ADMIN CANDIDATE MANAGEMENT ----------------
+@app.route("/admin/candidates/add", methods=["POST"])
+def admin_add_candidate():
+    if not session.get("is_admin"): return jsonify({"status": "error"}), 403
+    
+    try:
+        name = request.form.get("name")
+        position = request.form.get("position")
+        manifesto_text = request.form.get("manifesto")  # Text input
+        image_file = request.files.get("image")
+        manifesto_file = request.files.get("manifesto_file") # File input
+
+        # Handle Image
+        image_filename = "default.jpg"
+        if image_file:
+            image_filename = f"{int(time.time())}_{image_file.filename}"
+            image_path = os.path.join(BASE_DIR, "static/images", image_filename)
+            image_file.save(image_path)
+
+        # Handle Manifesto (File vs Text)
+        manifesto_value = manifesto_text # Default to text
+        
+        if manifesto_file and manifesto_file.filename:
+            # Ensure static/docs exists
+            docs_dir = os.path.join(BASE_DIR, "static/docs")
+            os.makedirs(docs_dir, exist_ok=True)
+            
+            # Save file
+            manifesto_filename = f"{int(time.time())}_{manifesto_file.filename}"
+            manifesto_path = os.path.join(docs_dir, manifesto_filename)
+            manifesto_file.save(manifesto_path)
+            manifesto_value = manifesto_filename
+            
+        if add_candidate(name, position, image_filename, manifesto_value):
+            return jsonify({"status": "success", "message": "Candidate Added!"})
+        else:
+            return jsonify({"status": "error", "message": "DB Error"})
+    except Exception as e:
+        logger.error(f"Error adding candidate: {e}")
+        return jsonify({"status": "error", "message": str(e)})
+
+@app.route("/admin/candidates/delete", methods=["POST"])
+def admin_delete_candidate():
+    if not session.get("is_admin"): return jsonify({"status": "error"}), 403
+    cid = request.form.get("id")
+    if delete_candidate(cid):
+        return jsonify({"status": "success"})
+    return jsonify({"status": "error"})
+
+# ---------------- ADMIN ELECTION CONTROL ----------------
+@app.route("/admin/election/pause", methods=["POST"])
+def admin_pause_election():
+    if not session.get("is_admin"): return jsonify({"status": "error"}), 403
+    eid = get_current_election_id()
+    if update_pause_status(eid, True):
+        logger.info(f"⏸️ Election #{eid} PAUSED by {session.get('admin_email')}")
+        return jsonify({"status": "success", "message": "Election paused"})
+    return jsonify({"status": "error", "message": "Failed to pause"})
+
+@app.route("/admin/election/resume", methods=["POST"])
+def admin_resume_election():
+    if not session.get("is_admin"): return jsonify({"status": "error"}), 403
+    eid = get_current_election_id()
+    if update_pause_status(eid, False):
+        logger.info(f"▶️ Election #{eid} RESUMED by {session.get('admin_email')}")
+        return jsonify({"status": "success", "message": "Election resumed"})
+    return jsonify({"status": "error", "message": "Failed to resume"})
+
+@app.route("/admin/election/set-deadline", methods=["POST"])
+def admin_set_deadline():
+    if not session.get("is_admin"): return jsonify({"status": "error"}), 403
+    
+    data = request.get_json()
+    deadline = data.get("deadline")  # expects ISO format string
+    
+    if not deadline:
+        return jsonify({"status": "error", "message": "Missing deadline"}), 400
+    
+    eid = get_current_election_id()
+    if set_election_deadline(eid, deadline):
+        logger.info(f"⏰ Deadline set for Election #{eid}: {deadline}")
+        return jsonify({"status": "success", "message": "Deadline set"})
+    return jsonify({"status": "error", "message": "Failed to set deadline"})
+
+@app.route("/admin/election/get-status", methods=["GET"])
+def admin_get_election_status():
+    if not session.get("is_admin"): return jsonify({"status": "error"}), 403
+    eid = get_current_election_id()
+    settings = get_election_settings(eid)
+    allowed, message = is_voting_allowed()
+    
+    return jsonify({
+        "status": "success",
+        "is_paused": settings.get('is_paused', 0) if settings else 0,
+        "deadline": settings.get('deadline') if settings else None,
+        "voting_allowed": allowed,
+        "message": message
+    })
 
 # FIX: Absolute path for offsets
 OFFSETS_FILE = os.path.join(BASE_DIR, "election_offsets.json")
@@ -356,14 +604,23 @@ def start_new_election():
         
     try:
         # 0. FETCH CURRENT BLOCKCHAIN TOTALS (The Snapshot)
+        # 0. FETCH CURRENT BLOCKCHAIN TOTALS (The Snapshot)
         current_votes = []
         try:
-             for i in range(1, 7):
-                 count = contract.functions.getVotes(i).call()
-                 current_votes.append(count)
-             for i in range(1, 7):
-                 count = contract.functions.getVotes(i).call()
-                 current_votes.append(count)
+             # FIX: Fetch ALL active candidates, not just 1-6
+             all_cands = get_all_candidates()
+             # We need to snapshot votes for EVERY candidate in the DB
+             # Assuming candidate IDs correspond to contract IDs
+             
+             for cand in all_cands:
+                 cid = cand['id']
+                 try:
+                    count = contract.functions.getVotes(cid).call()
+                    current_votes.append(count)
+                 except Exception as sub_e:
+                    logger.warning(f"⚠️ Could not fetch votes for ID {cid}: {sub_e}")
+                    current_votes.append(0) # Default to 0 if error for this specific ID
+                 
              logger.info(f"📸 SNAPSHOT CAPTURED: {current_votes}")
         except Exception as e:
              return jsonify({"status": "error", "message": f"Blockchain Read Failed: {str(e)}"}), 500
@@ -431,6 +688,12 @@ def submit_vote():
     if "user_id" not in session:
         return jsonify({"status": "error", "message": "Unauthorized"}), 401
 
+    # 🛑 CHECK: Is voting currently allowed?
+    allowed, reason = is_voting_allowed()
+    if not allowed:
+        logger.warning(f"Vote blocked for {session.get('student_id')}: {reason}")
+        return jsonify({"status": "error", "message": reason}), 403
+
     # 🛑 SECURITY: Input Validation
     data = request.get_json()
     if not data or "candidateId" not in data:
@@ -438,8 +701,10 @@ def submit_vote():
          
     try:
         candidate_id = int(data.get("candidateId"))
-        if candidate_id < 1 or candidate_id > 6:
-            raise ValueError("Invalid Candidate ID")
+        # Check if candidate exists in DB and is active
+        cand = get_candidate_by_id(candidate_id)
+        if not cand:
+             raise ValueError("Candidate not found")
     except ValueError:
         return jsonify({"status": "error", "message": "Invalid Candidate Selection"}), 400
 
@@ -460,88 +725,97 @@ def submit_vote():
     try:
         logger.info(f"🗳️  Processing vote for Candidate {candidate_id} by {student_id}...")
 
+        # 🔒 OPTIMISTIC LOCKING: Mark as voted FIRST to prevent race conditions
+        if not mark_user_as_voted(student_id):
+            return jsonify({"status": "error", "message": "You have already voted!"}), 400
+
         # 1. Create a FRESH temporary wallet
         temp_account = w3.eth.account.create()
         logger.info(f"👤 Created Temp Voter: {temp_account.address}")
-
-        # 2. Fund the Temp Wallet
-        nonce = w3.eth.get_transaction_count(ADMIN_ADDRESS)
         
-        # 🔥 BOOST: Pay 50% more gas to be faster
-        current_gas_price = w3.eth.gas_price
-        boosted_gas_price = int(current_gas_price * 1.5) 
+        try: 
+            # 🔒 CRITICAL SECTION: Only one thread can use Admin Nonce at a time
+            with NONCE_LOCK:
+                # 2. Fund the Temp Wallet
+                nonce = w3.eth.get_transaction_count(ADMIN_ADDRESS)
+                
+                # 🔥 BOOST: Pay 50% more gas to be faster
+                current_gas_price = w3.eth.gas_price
+                boosted_gas_price = int(current_gas_price * 1.5) 
 
-        # Calculate amount manually: 0.005 ETH = 0.005 * 10^18 Wei
-        amount_in_wei = int(0.005 * 10**18)
+                # Calculate amount manually: 0.005 ETH = 0.005 * 10^18 Wei
+                amount_in_wei = int(0.005 * 10**18)
 
-        fund_tx = {
-            'to': temp_account.address,
-            'value': amount_in_wei, 
-            'gas': 21000,
-            'gasPrice': boosted_gas_price,
-            'nonce': nonce,
-            'chainId': 11155111
-        }
-        signed_fund_tx = w3.eth.account.sign_transaction(fund_tx, ADMIN_PRIVATE_KEY)
-        
-        # FIX: Try camelCase, if fail try snake_case (Universal fix)
-        try:
-             tx_hash_fund = w3.eth.send_raw_transaction(signed_fund_tx.rawTransaction)
-        except AttributeError:
-             tx_hash_fund = w3.eth.send_raw_transaction(signed_fund_tx.raw_transaction)
+                fund_tx = {
+                    'to': temp_account.address,
+                    'value': amount_in_wei, 
+                    'gas': 21000,
+                    'gasPrice': boosted_gas_price,
+                    'nonce': nonce,
+                    'chainId': 11155111
+                }
+                signed_fund_tx = w3.eth.account.sign_transaction(fund_tx, ADMIN_PRIVATE_KEY)
+                
+                # FIX: Try camelCase, if fail try snake_case (Universal fix)
+                try:
+                    tx_hash_fund = w3.eth.send_raw_transaction(signed_fund_tx.rawTransaction)
+                except AttributeError:
+                    tx_hash_fund = w3.eth.send_raw_transaction(signed_fund_tx.raw_transaction)
 
-        except AttributeError:
-             tx_hash_fund = w3.eth.send_raw_transaction(signed_fund_tx.raw_transaction)
+            logger.info(f"💸 Funding Temp Wallet... (Tx: {tx_hash_fund.hex()})")
+            
+            # Wait for funding (TIMEOUT 300s)
+            w3.eth.wait_for_transaction_receipt(tx_hash_fund, timeout=300)
 
-        logger.info(f"💸 Funding Temp Wallet... (Tx: {tx_hash_fund.hex()})")
-        
-        # Wait for funding (TIMEOUT 300s)
-        
-        # Wait for funding (TIMEOUT 300s)
-        w3.eth.wait_for_transaction_receipt(tx_hash_fund, timeout=300)
+            # 3. Cast the Vote
+            contract_function = contract.functions.vote(candidate_id)
+            
+            tx_params = {
+                'from': temp_account.address,
+                'nonce': 0, 
+                'gas': 300000,
+                'gasPrice': boosted_gas_price,
+                'chainId': 11155111
+            }
 
-        # 3. Cast the Vote
-        contract_function = contract.functions.vote(candidate_id)
-        
-        tx_params = {
-            'from': temp_account.address,
-            'nonce': 0, 
-            'gas': 300000,
-            'gasPrice': boosted_gas_price,
-            'chainId': 11155111
-        }
+            # 🛠️ UNIVERSAL BUILD TRANSACTION FIX
+            try:
+                built_vote_tx = contract_function.build_transaction(tx_params)
+            except AttributeError:
+                built_vote_tx = contract_function.buildTransaction(tx_params)
+            
+            signed_vote_tx = w3.eth.account.sign_transaction(built_vote_tx, temp_account.key)
+            
+            try:
+                tx_hash_vote = w3.eth.send_raw_transaction(signed_vote_tx.rawTransaction)
+            except AttributeError:
+                tx_hash_vote = w3.eth.send_raw_transaction(signed_vote_tx.raw_transaction)
+            
+            logger.info(f"✅ Vote Cast on Blockchain! Hash: {tx_hash_vote.hex()}")
 
-        # 🛠️ UNIVERSAL BUILD TRANSACTION FIX
-        try:
-            built_vote_tx = contract_function.build_transaction(tx_params)
-        except AttributeError:
-            built_vote_tx = contract_function.buildTransaction(tx_params)
-        
-        signed_vote_tx = w3.eth.account.sign_transaction(built_vote_tx, temp_account.key)
-        
-        try:
-            tx_hash_vote = w3.eth.send_raw_transaction(signed_vote_tx.rawTransaction)
-        except AttributeError:
-            tx_hash_vote = w3.eth.send_raw_transaction(signed_vote_tx.raw_transaction)
-        
-        logger.info(f"✅ Vote Cast on Blockchain! Hash: {tx_hash_vote.hex()}")
+            # Wait for vote receipt (TIMEOUT 300s)
+            receipt = w3.eth.wait_for_transaction_receipt(tx_hash_vote, timeout=300)
 
-        # Wait for vote receipt (TIMEOUT 300s)
-        receipt = w3.eth.wait_for_transaction_receipt(tx_hash_vote, timeout=300)
+            if receipt.status == 1:
+                # ✅ SUCCESS! (User is already marked voted, so we just return)
+                logger.info(f"📝 Vote Confirmed for {student_id}")
+                
+                # Ensure hash has 0x prefix for Etherscan compatibility
+                tx_hash_str = tx_hash_vote.hex() if isinstance(tx_hash_vote.hex(), str) else str(tx_hash_vote.hex())
+                if not tx_hash_str.startswith('0x'):
+                    tx_hash_str = '0x' + tx_hash_str
+                return jsonify({"status": "success", "tx_hash": tx_hash_str})
+            else:
+                # ❌ REVERTED ON CHAIN -> ROLLBACK
+                logger.error("Transaction reverted on chain")
+                unmark_user_as_voted(student_id)
+                return jsonify({"status": "error", "message": "Transaction reverted on chain"}), 500
 
-        if receipt.status == 1:
-            # ✅ SUCCESS! MARK USER AS VOTED IMMEDIATELY
-            mark_user_as_voted(student_id)
-            logger.info(f"📝 {student_id} added to blacklist.")
-            # Ensure hash has 0x prefix for Etherscan compatibility
-            tx_hash_str = tx_hash_vote.hex() if isinstance(tx_hash_vote.hex(), str) else str(tx_hash_vote.hex())
-            if not tx_hash_str.startswith('0x'):
-                tx_hash_str = '0x' + tx_hash_str
-            return jsonify({"status": "success", "tx_hash": tx_hash_str})
-        else:
-            return jsonify({"status": "error", "message": "Transaction reverted on chain"}), 500
-
-            return jsonify({"status": "error", "message": "Transaction reverted on chain"}), 500
+        except Exception as inner_e:
+            # ❌ BLOCKCHAIN ERROR -> ROLLBACK
+            logger.error(f"Blockchain failure: {inner_e}")
+            unmark_user_as_voted(student_id) # Unlock user so they can try again
+            raise inner_e
 
     except Exception as e:
         logger.error(f"❌ Blockchain Error: {e}")

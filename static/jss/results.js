@@ -1,85 +1,110 @@
 // =====================================================
 // PROVIDER (PUBLIC SEPOLIA RPC)
 // =====================================================
-// =====================================================
-// PROVIDER (PUBLIC SEPOLIA RPC)
-// =====================================================
-// Use a robust public node to avoid Alchemy key issues
 const RPC_URL = "https://ethereum-sepolia.publicnode.com";
-
 let provider;
+
 try {
-    // Ethers v6
     if (ethers.JsonRpcProvider) {
         provider = new ethers.JsonRpcProvider(RPC_URL);
-    }
-    // Ethers v5
-    else if (ethers.providers && ethers.providers.JsonRpcProvider) {
+    } else if (ethers.providers && ethers.providers.JsonRpcProvider) {
         provider = new ethers.providers.JsonRpcProvider(RPC_URL);
     } else {
-        console.error("Ethers.js not loaded or incompatible version.");
+        console.error("Ethers.js not loaded.");
     }
 } catch (e) {
     console.error("Provider Init Error:", e);
 }
 
+// =====================================================
+// CHART JS SETUP
+// =====================================================
+let voteChart;
+
+function initChart(candidates) {
+    const ctx = document.getElementById('voteChart');
+    if (!ctx) return;
+
+    voteChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: candidates.map(c => c.name),
+            datasets: [{
+                label: 'Votes Cast',
+                data: candidates.map(() => 0),
+                backgroundColor: 'rgba(99, 102, 241, 0.5)',
+                borderColor: 'rgba(99, 102, 241, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    ticks: {
+                        color: '#94a3b8',
+                        stepSize: 1,
+                        precision: 0
+                    }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#94a3b8' }
+                }
+            },
+            plugins: {
+                legend: { labels: { color: '#e2e8f0' } }
+            }
+        }
+    });
+}
 
 // =====================================================
-// ELEMENT REFERENCES
-// =====================================================
-const v1 = document.getElementById("v1");
-const v2 = document.getElementById("v2");
-const v3 = document.getElementById("v3");
-const v4 = document.getElementById("v4");
-const v5 = document.getElementById("v5");
-const v6 = document.getElementById("v6");
-
-const card1 = document.getElementById("card1");
-const card2 = document.getElementById("card2");
-const card3 = document.getElementById("card3");
-const card4 = document.getElementById("card4");
-const card5 = document.getElementById("card5");
-const card6 = document.getElementById("card6");
-
-const winnerText = document.getElementById("winnerText");
-
-// =====================================================
-// FETCH VOTES
+// FETCH VOTES (DYNAMIC)
 // =====================================================
 async function fetchVotes() {
     try {
-        // 1. Get Offsets from Backend
+        const candidates = window.ALL_CANDIDATES || [];
+        if (candidates.length === 0) return null;
+
+        // 1. Get Offsets
         const offsetRes = await fetch('/api/offsets');
         const offsetData = await offsetRes.json();
-        const offsets = offsetData.offsets || [0, 0, 0, 0, 0, 0];
+        // Assuming offsets are stored by ID or index. 
+        // Backend `get_current_offsets` logic returns array [0,0,0,0,0,0] (fixed size 6 currently).
+        // WARNING: If we have >6 candidates, offsets logic in backend needs fix.
+        // For now, we'll map offsets safely.
+        const offsets = offsetData.offsets || [];
 
-        // 2. Get Total Votes from Blockchain
-        const contract = new ethers.Contract(
-            window.CONTRACT_ADDRESS,
-            window.CONTRACT_ABI,
-            provider
-        );
+        // 2. Blockchain Call
+        const contract = new ethers.Contract(window.CONTRACT_ADDRESS, window.CONTRACT_ABI, provider);
 
-        const rawVotes = await Promise.all([
-            contract.getVotes(1),
-            contract.getVotes(2),
-            contract.getVotes(3),
-            contract.getVotes(4),
-            contract.getVotes(5),
-            contract.getVotes(6)
-        ]);
-
-        // 3. Subtract Offsets
-        const finalVotes = rawVotes.map((v, i) => {
-            const val = Number(v) - (offsets[i] || 0);
-            return val < 0 ? 0 : val; // Safety check
+        // Map candidates to promises with error handling
+        const votePromises = candidates.map(async c => {
+            try {
+                const v = await contract.getVotes(c.id);
+                return v;
+            } catch (e) {
+                console.warn(`Failed to fetch votes for candidate ${c.id} (likely contract limit):`, e);
+                return 0; // Return 0 if contract doesn't recognize ID
+            }
         });
 
-        return finalVotes;
+        const rawVotes = await Promise.all(votePromises);
+
+        // 3. Process Votes
+        return candidates.map((c, i) => {
+            const raw = Number(rawVotes[i]);
+            const offset = offsets[i] || 0;
+            const final = raw - offset;
+            return Math.max(0, final);
+        });
 
     } catch (err) {
         console.error("Blockchain Fetch Error:", err);
-        return null;
+        return null; // Keep OLD data on error
     }
 }
 
@@ -89,55 +114,66 @@ async function fetchVotes() {
 function updateUI(votes) {
     if (!votes) return;
 
+    const candidates = window.ALL_CANDIDATES || [];
     const total = votes.reduce((a, b) => a + b, 0);
 
-    [v1, v2, v3, v4, v5, v6].forEach((el, i) => {
-        el.textContent = votes[i];
+    // Update Cards
+    candidates.forEach((c, i) => {
+        const voteCount = votes[i];
+
+        // Update Number
+        const countSpan = document.getElementById(`v${c.id}`);
+        if (countSpan) countSpan.textContent = voteCount;
+
+        // Update Bar
+        const card = document.getElementById(`card${c.id}`);
+        if (card) {
+            const percent = total ? Math.round((voteCount / total) * 100) : 0;
+            const fill = card.querySelector(".fill");
+            if (fill) fill.style.width = percent + "%";
+        }
     });
 
-    const cards = [card1, card2, card3, card4, card5, card6];
-    cards.forEach((card, i) => {
-        const percent = total ? Math.round((votes[i] / total) * 100) : 0;
-        const fill = card.querySelector(".fill");
-        if (fill) fill.style.width = percent + "%";
-    });
+    // Update Chart
+    if (voteChart) {
+        voteChart.data.datasets[0].data = votes;
+        voteChart.update();
+    }
 
-    determineWinner(votes);
+    determineWinner(votes, candidates);
 }
 
 // =====================================================
 // WINNER LOGIC
 // =====================================================
-function determineWinner(votes) {
+function determineWinner(votes, candidates) {
+    const winnerText = document.getElementById("winnerText");
     const max = Math.max(...votes);
 
-    const cards = [card1, card2, card3, card4, card5, card6];
-    const names = [
-        "Candidate One",
-        "Candidate Two",
-        "Candidate Three",
-        "Candidate Four",
-        "Candidate Five",
-        "Candidate Six"
-    ];
-
-    cards.forEach(c => c.classList.remove("leader"));
+    // Reset styles
+    candidates.forEach(c => {
+        const card = document.getElementById(`card${c.id}`);
+        if (card) card.classList.remove("leader");
+    });
 
     if (max === 0) {
         winnerText.textContent = "Waiting for votes...";
         return;
     }
 
-    const winners = votes
-        .map((v, i) => (v === max ? { name: names[i], el: cards[i] } : null))
-        .filter(Boolean);
+    // Find winners
+    const winners = candidates.filter((_, i) => votes[i] === max);
 
     if (winners.length > 1) {
-        winnerText.textContent = "Current Tie!";
-        winners.forEach(w => w.el.classList.add("leader"));
+        winnerText.textContent = "Current Tie: " + winners.map(w => w.name).join(" & ");
+        winners.forEach(w => {
+            const card = document.getElementById(`card${w.id}`);
+            if (card) card.classList.add("leader");
+        });
     } else {
         winnerText.textContent = "Winner: " + winners[0].name;
-        winners[0].el.classList.add("leader");
+        const card = document.getElementById(`card${winners[0].id}`);
+        if (card) card.classList.add("leader");
     }
 }
 
@@ -149,34 +185,27 @@ async function refresh() {
     if (votes) updateUI(votes);
 }
 
-refresh();
-setInterval(refresh, 7000);
+// Initialize
+if (window.ALL_CANDIDATES) {
+    initChart(window.ALL_CANDIDATES);
+    refresh();
+    setInterval(refresh, 5000);
+}
 
 // =====================================================
 // CSV EXPORT LOGIC
 // =====================================================
 function downloadCSV() {
-    // 1. Get Data
-    const rows = [
-        ["Candidate Name", "Position", "Total Votes"]
-    ];
+    const candidates = window.ALL_CANDIDATES || [];
+    const rows = [["Candidate Name", "Position", "Total Votes"]];
 
-    const names = [
-        "Candidate One", "Candidate Two", "Candidate Three",
-        "Candidate Four", "Candidate Five", "Candidate Six"
-    ];
-
-    // Grab current values from DOM
-    names.forEach((name, i) => {
-        const count = document.getElementById(`v${i + 1}`).textContent;
-        rows.push([name, "Class Rep", count]);
+    candidates.forEach(c => {
+        const countSpan = document.getElementById(`v${c.id}`);
+        const count = countSpan ? countSpan.textContent : "0";
+        rows.push([c.name, c.position, count]);
     });
 
-    // 2. Convert to CSV String
-    let csvContent = "data:text/csv;charset=utf-8,"
-        + rows.map(e => e.join(",")).join("\n");
-
-    // 3. Trigger Download
+    let csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
@@ -184,5 +213,11 @@ function downloadCSV() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+}
+
+// Winner Background Script
+const box = document.getElementById("winnerBox");
+if (box) {
+    box.style.backgroundImage = `url('/static/images/winner-bg-premium.png')`;
 }
 

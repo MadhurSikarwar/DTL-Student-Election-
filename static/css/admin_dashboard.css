@@ -1,0 +1,678 @@
+body {
+    background: var(--bg-body);
+    color: var(--text-main);
+    font-family: var(--font-main);
+    padding: 0;
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-nav {
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.admin-brand {
+    font-weight: 800;
+    font-size: 1.5rem;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.badge {
+    background: var(--accent-red);
+    color: white;
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+
+.admin-user {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.user-pill {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    border: 1px solid var(--border-color);
+    font-size: 0.9rem;
+}
+
+.logout-btn {
+    background: var(--bg-surface);
+    color: var(--accent-red);
+    text-decoration: none;
+    padding: 0.5rem 1.2rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--accent-red);
+    transition: all 0.2s;
+    font-weight: 600;
+}
+
+.logout-btn:hover {
+    background: var(--accent-red);
+    color: white;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 3rem auto;
+    padding: 0 2rem;
+    flex: 1;
+    width: 90%;
+}
+
+.grid-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--primary);
+}
+
+.card h3 {
+    margin-top: 0;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.card .value {
+    font-size: 3rem;
+    font-weight: 700;
+    margin: 0.5rem 0;
+    background: linear-gradient(135deg, #fff 0%, #aaa 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    background: #10b981;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #10b981;
+}
+
+.action-area {
+    margin-top: 3rem;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px dashed var(--border-color);
+    border-radius: var(--radius-lg);
+}
+
+.btn-disabled {
+    background: #333;
+    color: #666;
+    padding: 1rem 2rem;
+    border-radius: var(--radius-md);
+    border: none;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: not-allowed;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.voter-log {
+    margin-top: 3rem;
+}
+
+.voter-log table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.voter-log th,
+.voter-log td {
+    text-align: left;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.voter-log th {
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+/* --- EXTRACTED INLINE STYLES (ENHANCED) --- */
+
+/* Dashboard Summary Cards */
+.card {
+    background: var(--bg-surface);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-md);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-glow);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.card:nth-child(2) {
+    border-left-color: var(--accent-blue);
+}
+
+.card:nth-child(2)::before {
+    background: var(--accent-blue);
+}
+
+/* Grid Header & Section Titles */
+.section-header-blue {
+    color: var(--accent-blue);
+    text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
+
+.section-header-primary {
+    color: var(--primary);
+    text-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+}
+
+/* Action Areas */
+.action-area {
+    margin-top: 3rem;
+    padding: 2.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.action-area::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, transparent 100%);
+    pointer-events: none;
+}
+
+.area-primary {
+    border-top: 4px solid var(--primary);
+}
+
+.area-blue {
+    border-top: 4px solid var(--accent-blue);
+}
+
+/* Add Candidate Form */
+.add-candidate-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 2rem;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+}
+
+.form-title {
+    margin: 0 0 1.5rem 0;
+    color: var(--text-highlight);
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0.5rem;
+    display: inline-block;
+}
+
+/* Textured Input Boxes */
+.admin-input {
+    background: rgba(15, 23, 42, 0.4);
+    border: 1px solid var(--border-color);
+    padding: 1rem;
+    color: white;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    width: 100%;
+    /* "Boxy" feel */
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+    /* Fix overflow */
+}
+
+.admin-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    outline: none;
+    background: rgba(15, 23, 42, 0.8);
+}
+
+/* File Input Styling */
+input[type="file"] {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+input[type="file"]::file-selector-button {
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-right: 1rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
+}
+
+input[type="file"]::file-selector-button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-glow);
+}
+
+.col-span-full {
+    grid-column: 1 / -1;
+}
+
+.photo-upload-group {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px dashed var(--border-color);
+}
+
+.label-muted {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.btn-add {
+    margin-left: auto;
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    padding: 0.8rem 2rem;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    font-weight: 600;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+}
+
+.btn-add:hover {
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-2px);
+}
+
+/* Action Area Controls */
+.control-panel {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    position: relative;
+}
+
+.control-desc {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+.status-box-active {
+    padding: 1rem;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid #10b981;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    color: #10b981;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: 0.5px;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.1);
+}
+
+.control-btn-group {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn-pause {
+    flex: 1;
+    background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+    color: white;
+    border: none;
+    padding: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.3s;
+    box-shadow: 0 4px 6px rgba(220, 38, 38, 0.2);
+}
+
+.btn-pause:hover {
+    box-shadow: 0 0 15px rgba(220, 38, 38, 0.4);
+    transform: translateY(-2px);
+}
+
+.btn-resume {
+    flex: 1;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: none;
+    padding: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.3s;
+    box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
+}
+
+.btn-resume:hover {
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+    transform: translateY(-2px);
+}
+
+.deadline-display {
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    color: var(--text-highlight);
+    font-family: monospace;
+    text-align: center;
+    font-size: 1rem;
+}
+
+.input-deadline {
+    width: 100%;
+    background: rgba(15, 23, 42, 0.4);
+    border: 1px solid var(--border-color);
+    padding: 1rem;
+    color: white;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-family: var(--font-main);
+    font-size: 1rem;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+    /* Fix overflow */
+    color-scheme: dark;
+    /* Dark mode for calendar popup */
+}
+
+/* Custom Calendar Icon */
+.input-deadline::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    opacity: 0.7;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    background-size: contain;
+    width: 20px;
+    height: 20px;
+}
+
+.input-deadline::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+}
+
+.btn-set-deadline {
+    width: 100%;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    border: none;
+    padding: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.3s;
+    box-shadow: 0 4px 6px rgba(59, 130, 246, 0.2);
+}
+
+.btn-set-deadline:hover {
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+    transform: translateY(-2px);
+}
+
+.control-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+/* Candidates Table */
+.table-container {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.thead-bg {
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom: 2px solid var(--border-color);
+}
+
+.th-pad,
+.th-right {
+    padding: 1.2rem;
+    color: var(--text-highlight);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    text-align: left;
+    /* Force left alignment */
+}
+
+.th-right {
+    text-align: right;
+    /* Override for actions column */
+}
+
+.row-border {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.2s;
+}
+
+.row-border:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.td-muted {
+    padding: 1rem;
+    color: var(--text-muted);
+}
+
+.td-pad {
+    padding: 1rem;
+}
+
+.td-bold {
+    padding: 1rem;
+    font-weight: 600;
+}
+
+.td-blue {
+    padding: 1rem;
+    color: var(--accent-blue);
+}
+
+.td-right {
+    padding: 1rem;
+    text-align: right;
+}
+
+.cand-thumb {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-delete {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--accent-red);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.btn-delete:hover {
+    background: var(--accent-red);
+    color: white;
+    border-color: var(--accent-red);
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+}
+
+.no-cand-msg {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* Election Reset Zone */
+.reset-zone {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+}
+
+.text-highlight {
+    margin: 0;
+    color: var(--text-highlight);
+    font-size: 1.2rem;
+}
+
+.reset-desc {
+    color: var(--text-muted);
+    margin: 0.5rem 0 0 0;
+    font-size: 0.95rem;
+}
+
+.btn-reset {
+    background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: var(--radius-md);
+    border: none;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s;
+    box-shadow: 0 4px 6px rgba(220, 38, 38, 0.3);
+}
+
+.btn-reset:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0 20px rgba(220, 38, 38, 0.5);
+}
+
+/* Recent Activity */
+.thead-subtle {
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.td-mono-blue {
+    font-family: monospace;
+    color: var(--accent-blue);
+    background: rgba(59, 130, 246, 0.1);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.status-voted {
+    color: #10b981;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.no-votes-msg {
+    text-align: center;
+    padding: 4rem;
+    color: var(--text-muted);
+    background: repeating-linear-gradient(45deg,
+            rgba(255, 255, 255, 0.01),
+            rgba(255, 255, 255, 0.01) 10px,
+            transparent 10px,
+            transparent 20px);
+}

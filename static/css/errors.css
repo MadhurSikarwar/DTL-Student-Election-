@@ -1,0 +1,78 @@
+/* =========================================
+   errors.css - 404 & 500 Pages
+   ============================================ */
+body {
+    background: var(--bg-body);
+    color: var(--text-main);
+    font-family: var(--font-main);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow: hidden;
+    margin: 0;
+}
+
+/* 404 Specific */
+h1.error-404 {
+    font-size: 8rem;
+    font-weight: 800;
+    margin: 0;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1;
+}
+
+/* 500 Specific */
+h1.error-500 {
+    font-size: 6rem;
+    color: var(--accent-red);
+    margin: 0;
+}
+
+/* Common Text */
+p {
+    font-size: 1.5rem;
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+    line-height: 1.5;
+}
+
+p.desc-500 {
+    font-size: 1.2rem;
+    max-width: 500px;
+}
+
+/* Common Button */
+.btn {
+    padding: 1rem 2rem;
+    border-radius: var(--radius-pill);
+    text-decoration: none;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-hover);
+    box-shadow: var(--shadow-glow);
+}
+
+.btn-outline {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    padding: 0.8rem 1.5rem;
+}
+
+.btn-outline:hover {
+    background: var(--bg-surface-hover);
+}

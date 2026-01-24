@@ -6,53 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Server Error — E-Vote 2025</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
-    <style>
-        body {
-            background: var(--bg-body);
-            color: var(--text-main);
-            font-family: var(--font-main);
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-        }
-
-        h1 {
-            font-size: 6rem;
-            color: var(--accent-red);
-            margin: 0;
-        }
-
-        p {
-            font-size: 1.2rem;
-            color: var(--text-muted);
-            margin-bottom: 2rem;
-            max-width: 500px;
-        }
-
-        .btn {
-            background: var(--bg-surface);
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-            padding: 0.8rem 1.5rem;
-            border-radius: var(--radius-pill);
-            text-decoration: none;
-            font-weight: 600;
-            transition: 0.3s;
-        }
-
-        .btn:hover {
-            background: var(--bg-surface-hover);
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/errors.css') }}">
 </head>
 
 <body>
-    <h1>500</h1>
-    <p>System Malfunction. The servers are overheating or the blockchain is congested.</p>
-    <a href="/" class="btn">Try Again</a>
+    <h1 class="error-500">500</h1>
+    <p class="desc-500">System Malfunction. The servers are overheating or the blockchain is congested.</p>
+    <a href="/" class="btn btn-outline">Try Again</a>
     <script src="{{ url_for('static', filename='jss/background-particles.js') }}"></script>
 </body>
 
