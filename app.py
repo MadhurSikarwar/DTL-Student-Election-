@@ -188,6 +188,16 @@ def unmark_user_as_voted(student_id):
         logger.error(f"❌ ROLLBACK FAILED for {student_id}: {e}")
         return False
 
+# 🔧 AUTO-INIT DATABASE (Critical for Render/Cloud)
+if not os.path.exists(DB_PATH):
+    logger.info(f"⚙️ Database MISSING at {DB_PATH}. Running init_db(DB_PATH)...")
+    success = init_db(DB_PATH)
+    if success: logger.info("✅ Init DB Success")
+    else: logger.error("❌ Init DB Failed")
+else:
+    logger.info(f"📂 Database FOUND at {DB_PATH}. Verifying tables...")
+    init_db(DB_PATH)
+
 # ==========================================================
 # 📋 CANDIDATE MANAGEMENT (DB)
 # ==========================================================
