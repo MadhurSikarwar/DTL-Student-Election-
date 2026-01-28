@@ -46,7 +46,7 @@ This project adheres to a Code of Conduct. By participating, you are expected to
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/dtl-student-election.git
+   git clone https://github.com/MadhurSikarwar/dtl-student-election.git
    cd dtl-student-election
    ```
 
